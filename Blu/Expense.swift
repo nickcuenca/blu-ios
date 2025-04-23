@@ -8,7 +8,7 @@
 import Foundation
 import CoreLocation
 
-struct Expense: Identifiable, Codable {
+struct Expense: Identifiable, Codable, Hashable, Equatable {
     let id: UUID
     var title: String
     var amount: Double

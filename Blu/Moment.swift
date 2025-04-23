@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Moment: Identifiable, Codable {
+struct Moment: Identifiable, Codable, Hashable, Equatable {
     let id: UUID
     var caption: String
     var imageData: Data?

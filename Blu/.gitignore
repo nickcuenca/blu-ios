@@ -1,0 +1,54 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode
+build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+DerivedData/
+*.xcscmblueprint
+
+# SwiftPM
+.build/
+Packages/
+Package.resolved
+
+# CocoaPods
+Pods/
+
+# Carthage
+Carthage/Build/
+
+# Swift Package Manager
+.swiftpm/
+.idea/
+*.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+
+# Firebase/GoogleService plist (if using Firebase, uncomment below)
+# GoogleService-Info.plist
+
+# Xcode Preview Content
+*.xcpreview*
+
+# Logs
+*.log
+
+# Git
+*.orig
+
+# Bundler
+.bundle/
+
+# Fastlane
+fastlane/report.xml
+fastlane/screenshots
+fastlane/test_output

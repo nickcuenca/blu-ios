@@ -5,11 +5,10 @@
 //  Created by Nicolas Cuenca on 3/29/25.
 //
 
-
 import Foundation
 import CoreLocation
 
-struct Checkpoint: Identifiable, Codable {
+struct Checkpoint: Identifiable, Codable, Hashable {
     let id: UUID
     var title: String
     var time: Date?

@@ -1,12 +1,14 @@
 //  SessionDetailView.swift
 //  Blu
 
-import CoreLocation
 import SwiftUI
+import CoreLocation
 
 struct SessionDetailView: View {
     @Binding var session: HangoutSession
     @AppStorage("username") var username: String = ""
+
+    @State private var selectedCheckpoint: Checkpoint? = nil
     @State private var showAllSummary = false
     @State private var showAllSettleUp = false
     @State private var showEditHangout = false
@@ -14,99 +16,118 @@ struct SessionDetailView: View {
     @State private var newCheckpointTitle = ""
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    headerSection
+        NavigationStack {
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        headerSection
 
-                    if session.checkpoints.isEmpty {
-                        Text("No checkpoints yet.")
-                            .foregroundColor(.gray)
-                            .padding(.top, 10)
-                    } else {
-                        ForEach($session.checkpoints) { $checkpoint in
-                            NavigationLink(destination: CheckpointDetailView(checkpoint: $checkpoint, participants: session.participants)) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack {
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text(checkpoint.title)
-                                                .font(.headline)
-                                            if let time = checkpoint.time {
-                                                Text(time, style: .time)
-                                                    .font(.caption)
-                                                    .foregroundColor(.gray)
+                        if session.checkpoints.isEmpty {
+                            Text("No checkpoints yet.")
+                                .foregroundColor(.gray)
+                                .padding(.top, 10)
+                        } else {
+                            ForEach(session.checkpoints) { checkpoint in
+                                Button {
+                                    selectedCheckpoint = checkpoint
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        HStack {
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text(checkpoint.title)
+                                                    .font(.headline)
+                                                if let time = checkpoint.time {
+                                                    Text(time, style: .time)
+                                                        .font(.caption)
+                                                        .foregroundColor(.gray)
+                                                }
                                             }
+                                            Spacer()
+                                            Image(systemName: "chevron.right")
+                                                .foregroundColor(.gray)
                                         }
-                                        Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .foregroundColor(.gray)
+                                        .padding()
+                                        .background(Color.blue.opacity(0.1))
+                                        .cornerRadius(12)
                                     }
-                                    .padding()
-                                    .background(Color.blue.opacity(0.1))
-                                    .cornerRadius(12)
                                 }
+                                .buttonStyle(PlainButtonStyle())
                             }
-                            .buttonStyle(PlainButtonStyle())
+                        }
+
+                        if !session.checkpoints.flatMap({ $0.expenses }).isEmpty {
+                            summarySection
+                            Divider().padding(.vertical)
+                            settleUpSection
                         }
                     }
+                    .padding()
+                }
 
-                    if !session.checkpoints.flatMap({ $0.expenses }).isEmpty {
-                        summarySection
-                        Divider().padding(.vertical)
-                        settleUpSection
+                Button(action: {
+                    showingAddCheckpoint = true
+                }) {
+                    Text("Add Checkpoint")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.green)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                        .padding(.horizontal)
+                        .padding(.bottom, 12)
+                }
+            }
+            .navigationTitle(session.title)
+            .sheet(isPresented: $showingAddCheckpoint) {
+                VStack(spacing: 20) {
+                    Text("Add Checkpoint")
+                        .font(.title2)
+                    TextField("Checkpoint Title", text: $newCheckpointTitle)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+
+                    Button("Save") {
+                        let newCheckpoint = Checkpoint(
+                            title: newCheckpointTitle,
+                            location: CLLocationCoordinate2D(latitude: 0, longitude: 0)
+                        )
+                        session.checkpoints.append(newCheckpoint)
+                        newCheckpointTitle = ""
+                        showingAddCheckpoint = false
                     }
+                    .disabled(newCheckpointTitle.isEmpty)
+
+                    Button("Cancel") {
+                        newCheckpointTitle = ""
+                        showingAddCheckpoint = false
+                    }
+                    .foregroundColor(.red)
                 }
                 .padding()
             }
-
-            Button(action: {
-                showingAddCheckpoint = true
-            }) {
-                Text("Add Checkpoint")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-                    .padding(.horizontal)
-                    .padding(.bottom, 12)
+            .sheet(isPresented: $showEditHangout) {
+                EditHangoutView(hangout: $session, isEditing: true)
             }
-        }
-        .navigationTitle(session.title)
-        .sheet(isPresented: $showingAddCheckpoint) {
-            VStack(spacing: 20) {
-                Text("Add Checkpoint")
-                    .font(.title2)
-                TextField("Checkpoint Title", text: $newCheckpointTitle)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-
-                Button("Save") {
-                    let newCheckpoint = Checkpoint(
-                        title: newCheckpointTitle,
-                        location: CLLocationCoordinate2D(latitude: 0, longitude: 0)
-                    )
-                    session.checkpoints.append(newCheckpoint)
-                    newCheckpointTitle = ""
-                    showingAddCheckpoint = false
-                }
-                .disabled(newCheckpointTitle.isEmpty)
-
-                Button("Cancel") {
-                    newCheckpointTitle = ""
-                    showingAddCheckpoint = false
-                }
-                .foregroundColor(.red)
+            .navigationDestination(item: $selectedCheckpoint) { checkpoint in
+                CheckpointDetailView(
+                    checkpoint: binding(for: checkpoint),
+                    participants: session.participants
+                )
             }
-            .padding()
-        }
-        .sheet(isPresented: $showEditHangout) {
-            EditHangoutView(hangout: $session, isEditing: true)
         }
     }
 
-    // MARK: - Helpers
+    // MARK: - Binding Helper
+
+    private func binding(for checkpoint: Checkpoint) -> Binding<Checkpoint> {
+        guard let index = session.checkpoints.firstIndex(where: { $0.id == checkpoint.id }) else {
+            fatalError("Checkpoint not found in session")
+        }
+        return $session.checkpoints[index]
+    }
+
+    // MARK: - Summary Helpers
 
     private func calculateSummary(for expense: Expense) -> [(String, (paid: Double, owes: Double))] {
         var summary: [String: (paid: Double, owes: Double)] = [:]
@@ -160,7 +181,7 @@ struct SessionDetailView: View {
         return result
     }
 
-    // MARK: - Subviews
+    // MARK: - Sections
 
     private var headerSection: some View {
         HStack {
@@ -192,7 +213,7 @@ struct SessionDetailView: View {
         return VStack(alignment: .leading, spacing: 8) {
             Text("Summary").font(.headline)
 
-            ForEach(summaryList.prefix(2), id: \ .0) { name, paid, owes in
+            ForEach(summaryList.prefix(2), id: \.0) { name, paid, owes in
                 let net = paid - owes
                 HStack {
                     VStack(alignment: .leading) {
@@ -222,7 +243,7 @@ struct SessionDetailView: View {
         return VStack(alignment: .leading, spacing: 8) {
             Text("Settle Up").font(.headline)
 
-            ForEach(settlements.prefix(2), id: \ .0) { (payer, receiver, amount) in
+            ForEach(settlements.prefix(2), id: \.0) { (payer, receiver, amount) in
                 HStack {
                     VStack(alignment: .leading) {
                         Text("\(payer) pays \(receiver)")
