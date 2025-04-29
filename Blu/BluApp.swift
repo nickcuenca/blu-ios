@@ -4,10 +4,15 @@
 //  Created by Nicolas Cuenca on 3/27/25.
 //
 
+import Firebase
 import SwiftUI
 
 @main
 struct BluApp: App {
+    init() {
+        FirebaseApp.configure()
+    }
+    
     var body: some Scene {
         WindowGroup {
             LauncherView()

@@ -6,6 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		62AA69162DC0C6CF006AB4E3 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 62AA69152DC0C6CF006AB4E3 /* FirebaseAnalytics */; };
+		62AA69182DC0C6CF006AB4E3 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 62AA69172DC0C6CF006AB4E3 /* FirebaseAuth */; };
+		62AA691A2DC0C6CF006AB4E3 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 62AA69192DC0C6CF006AB4E3 /* FirebaseFirestore */; };
+		62AA691C2DC0C6CF006AB4E3 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 62AA691B2DC0C6CF006AB4E3 /* FirebaseStorage */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		62EB12352D966409009F5CB1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -29,9 +36,30 @@
 		62EB123E2D966409009F5CB1 /* BluUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BluUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		62AA69122DC0C5C4006AB4E3 /* Exceptions for "Blu" folder in "BluTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"GoogleService-Info.plist",
+			);
+			target = 62EB12332D966409009F5CB1 /* BluTests */;
+		};
+		62AA69132DC0C5C4006AB4E3 /* Exceptions for "Blu" folder in "BluUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"GoogleService-Info.plist",
+			);
+			target = 62EB123D2D966409009F5CB1 /* BluUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		62EB12252D966407009F5CB1 /* Blu */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				62AA69122DC0C5C4006AB4E3 /* Exceptions for "Blu" folder in "BluTests" target */,
+				62AA69132DC0C5C4006AB4E3 /* Exceptions for "Blu" folder in "BluUITests" target */,
+			);
 			path = Blu;
 			sourceTree = "<group>";
 		};
@@ -52,6 +80,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				62AA69162DC0C6CF006AB4E3 /* FirebaseAnalytics in Frameworks */,
+				62AA691C2DC0C6CF006AB4E3 /* FirebaseStorage in Frameworks */,
+				62AA69182DC0C6CF006AB4E3 /* FirebaseAuth in Frameworks */,
+				62AA691A2DC0C6CF006AB4E3 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +144,10 @@
 			);
 			name = Blu;
 			packageProductDependencies = (
+				62AA69152DC0C6CF006AB4E3 /* FirebaseAnalytics */,
+				62AA69172DC0C6CF006AB4E3 /* FirebaseAuth */,
+				62AA69192DC0C6CF006AB4E3 /* FirebaseFirestore */,
+				62AA691B2DC0C6CF006AB4E3 /* FirebaseStorage */,
 			);
 			productName = Blu;
 			productReference = 62EB12232D966407009F5CB1 /* Blu.app */;
@@ -195,6 +231,9 @@
 			);
 			mainGroup = 62EB121A2D966407009F5CB1;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				62AA69142DC0C6CF006AB4E3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 62EB12242D966407009F5CB1 /* Products */;
 			projectDirPath = "";
@@ -409,7 +448,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "Team-Blu.Blu";
+				PRODUCT_BUNDLE_IDENTIFIER = com.nickcuenca.blu;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -446,7 +485,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "Team-Blu.Blu";
+				PRODUCT_BUNDLE_IDENTIFIER = com.nickcuenca.blu;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
@@ -583,6 +622,40 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		62AA69142DC0C6CF006AB4E3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.12.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		62AA69152DC0C6CF006AB4E3 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 62AA69142DC0C6CF006AB4E3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		62AA69172DC0C6CF006AB4E3 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 62AA69142DC0C6CF006AB4E3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		62AA69192DC0C6CF006AB4E3 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 62AA69142DC0C6CF006AB4E3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		62AA691B2DC0C6CF006AB4E3 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 62AA69142DC0C6CF006AB4E3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 62EB121B2D966407009F5CB1 /* Project object */;
 }
