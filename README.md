@@ -70,7 +70,7 @@ All data is calculated into a **summary** and a **settle up list** so friends kn
 Built by [**Nicolas Cuenca**](https://github.com/nickcuenca)  
 👨‍🎓 UCLA Computer Science  
 🔧 Full Stack Developer • iOS Builder • Firebase Enthusiast  
-📫 DM-friendly on GitHub or [LinkedIn](https://www.linkedin.com/in/your-link)
+📫 DM-friendly on GitHub or [LinkedIn](https://www.linkedin.com/in/nicolaswcuenca)
 
 ---
 
