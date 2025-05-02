@@ -4,6 +4,7 @@
 
 import SwiftUI
 import PhotosUI
+import FirebaseFirestore
 
 struct RegistrationViewV2: View {
     @AppStorage("username") var username: String = ""
@@ -127,6 +128,27 @@ struct RegistrationViewV2: View {
                     venmoUsername = venmoInput
                     cashAppTag = cashAppInput
                     zelleInfo = zelleInput
+                    step += 1
+
+                    let db = Firestore.firestore()
+                    let userID = UUID().uuidString
+
+                    let userData: [String: Any] = [
+                        "username": userID,
+                        "handle": nameInput,
+                        "email": emailInput,
+                        "friends": [],
+                        "createdAt": Timestamp(date: Date())
+                    ]
+
+                    db.collection("users").document(userID).setData(userData) { error in
+                        if let error = error {
+                            print("Error saving user: \(error)")
+                        } else {
+                            print("User saved to Firestore!")
+                        }
+                    }
+
                     step += 1
                 }
 
