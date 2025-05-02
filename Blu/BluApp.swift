@@ -1,11 +1,12 @@
 import SwiftUI
 import Firebase
+import GoogleSignIn  
 
 @main
 struct BluApp: App {
     init() {
         FirebaseApp.configure()
-        UserDefaults.standard.set("D9A762EC-C6E3-4BC9-AC87-1B967DA95F06", forKey: "userID")
+        GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: FirebaseApp.app()?.options.clientID ?? "")
     }
 
     var body: some Scene {

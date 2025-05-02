@@ -6,16 +6,18 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct LauncherView: View {
     @AppStorage("username") var username: String = ""
     @State private var isLoading = true
+    @State private var needsGoogleSignIn = false
 
     var body: some View {
         Group {
             if isLoading {
                 VStack {
-                    Image("Blu_Logo") // must match asset name
+                    Image("Blu_Logo")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 160, height: 160)
@@ -25,15 +27,16 @@ struct LauncherView: View {
                 .ignoresSafeArea()
                 .onAppear {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        if Auth.auth().currentUser == nil {
+                            needsGoogleSignIn = true
+                        }
                         isLoading = false
                     }
                 }
+            } else if needsGoogleSignIn {
+                GoogleSignInView()
             } else {
-                if username.isEmpty {
-                    RegistrationViewV2()
-                } else {
-                    TabBarView()
-                }
+                TabBarView()
             }
         }
     }

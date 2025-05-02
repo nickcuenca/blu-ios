@@ -1,11 +1,5 @@
-//
-//  ProfileViewEnhanced.swift
-//  Blu
-//
-//  Created by Nicolas Cuenca on 3/29/25.
-//
-
 import SwiftUI
+import FirebaseAuth
 
 struct ProfileViewEnhanced: View {
     @AppStorage("username") var username: String = ""
@@ -18,7 +12,7 @@ struct ProfileViewEnhanced: View {
     @AppStorage("snapchat") var snapchat: String = ""
     @AppStorage("tiktok") var tiktok: String = ""
     @AppStorage("userProfileImageData") var userProfileImageData: Data?
-
+    
     @State private var editing = false
     @State private var tempVenmo = ""
     @State private var tempCashApp = ""
@@ -26,6 +20,7 @@ struct ProfileViewEnhanced: View {
     @State private var tempInstagram = ""
     @State private var tempSnapchat = ""
     @State private var tempTiktok = ""
+    @State private var signedOut = false
 
     let friends = ["Max", "Armeen", "John", "Lisa"]
 
@@ -107,19 +102,18 @@ struct ProfileViewEnhanced: View {
                     }
                 }
 
+                Section {
+                    Button(role: .destructive) {
+                        signOut()
+                    } label: {
+                        Label("Sign Out", systemImage: "arrow.backward.square")
+                    }
+                }
+
                 #if DEBUG
                 Section(header: Text("Developer Tools")) {
                     Button(role: .destructive) {
-                        username = ""
-                        userHandle = ""
-                        userEmail = ""
-                        venmoUsername = ""
-                        cashAppTag = ""
-                        zelleInfo = ""
-                        userProfileImageData = nil
-                        instagram = ""
-                        snapchat = ""
-                        tiktok = ""
+                        clearUserData()
                     } label: {
                         Label("Reset Profile", systemImage: "arrow.counterclockwise")
                     }
@@ -144,12 +138,32 @@ struct ProfileViewEnhanced: View {
                     }
                 }
             }
+            .fullScreenCover(isPresented: $signedOut) {
+                GoogleSignInView()
+            }
         }
     }
-}
 
-struct ProfileViewEnhanced_Previews: PreviewProvider {
-    static var previews: some View {
-        ProfileViewEnhanced()
+    private func signOut() {
+        do {
+            try Auth.auth().signOut()
+            clearUserData()
+            signedOut = true
+        } catch {
+            print("Error signing out: \(error.localizedDescription)")
+        }
+    }
+
+    private func clearUserData() {
+        username = ""
+        userHandle = ""
+        userEmail = ""
+        venmoUsername = ""
+        cashAppTag = ""
+        zelleInfo = ""
+        userProfileImageData = nil
+        instagram = ""
+        snapchat = ""
+        tiktok = ""
     }
 }
