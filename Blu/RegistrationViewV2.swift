@@ -1,7 +1,3 @@
-//  RegistrationViewV2.swift
-//  Blu
-//  Created by Nicolas Cuenca on 3/28/25.
-
 import SwiftUI
 import PhotosUI
 import FirebaseFirestore
@@ -121,6 +117,7 @@ struct RegistrationViewV2: View {
                 }
 
                 Button("Finish") {
+                    // Save to UserDefaults
                     username = nameInput
                     userHandle = handleInput
                     userPassword = passwordInput
@@ -128,14 +125,17 @@ struct RegistrationViewV2: View {
                     venmoUsername = venmoInput
                     cashAppTag = cashAppInput
                     zelleInfo = zelleInput
-                    step += 1
 
-                    let db = Firestore.firestore()
+                    // Generate and save userID
                     let userID = UUID().uuidString
+                    UserDefaults.standard.set(userID, forKey: "userID")
+                    UserDefaults.standard.set(nameInput, forKey: "username")
 
+                    // Firestore user entry
+                    let db = Firestore.firestore()
                     let userData: [String: Any] = [
-                        "username": userID,
-                        "handle": nameInput,
+                        "username": nameInput,
+                        "handle": handleInput,
                         "email": emailInput,
                         "friends": [],
                         "createdAt": Timestamp(date: Date())
@@ -143,9 +143,9 @@ struct RegistrationViewV2: View {
 
                     db.collection("users").document(userID).setData(userData) { error in
                         if let error = error {
-                            print("Error saving user: \(error)")
+                            print("❌ Error saving user: \(error)")
                         } else {
-                            print("User saved to Firestore!")
+                            print("✅ User saved to Firestore")
                         }
                     }
 

@@ -35,7 +35,7 @@ struct TabBarView: View {
                             Text("New")
                         }.tag(2)
 
-                    SocialView()
+                    SocialFeedView()
                         .tabItem {
                             Image(systemName: "person.2")
                             Text("Social")
@@ -92,14 +92,6 @@ struct CreateSessionViewWrapper: View {
 
     var body: some View {
         CreateHangoutViewWithLocation(sessions: $sessions, onHangoutCreated: onSessionCreated)
-    }
-}
-
-struct SocialView: View {
-    var body: some View {
-        Text("Social Coming Soon")
-            .font(.title2)
-            .padding()
     }
 }
 

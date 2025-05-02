@@ -1,11 +1,7 @@
-//  CheckpointDetailView.swift
-//  Blu
-//
-//  Created by Nicolas Cuenca on 3/30/25.
-//
-
 import SwiftUI
-import CoreLocation
+import FirebaseStorage
+import FirebaseFirestore
+import Foundation
 
 struct CheckpointDetailView: View {
     @Binding var checkpoint: Checkpoint
@@ -17,19 +13,24 @@ struct CheckpointDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                headerSection
+                Text("Location: \(checkpoint.location.latitude), \(checkpoint.location.longitude)")
+                    .font(.caption)
+                    .foregroundColor(.gray)
 
-                // Expenses Section
+                if let time = checkpoint.time {
+                    Text("Time: \(time.formatted(.dateTime.hour().minute()))")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+
                 if checkpoint.expenses.isEmpty {
                     Text("No expenses yet")
                         .foregroundColor(.gray)
                 } else {
-                    Text("Expenses")
-                        .font(.headline)
+                    Text("Expenses").font(.headline)
                     ForEach(checkpoint.expenses) { expense in
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(expense.title)
-                                .font(.subheadline.bold())
+                        VStack(alignment: .leading) {
+                            Text(expense.title).bold()
                             Text("Amount: $\(expense.amount, specifier: "%.2f")")
                             Text("Paid by: \(expense.paidBy)")
                         }
@@ -48,13 +49,10 @@ struct CheckpointDetailView: View {
                 .foregroundColor(.white)
                 .cornerRadius(10)
 
-                // Moments Section
                 if !checkpoint.moments.isEmpty {
-                    Text("Moments")
-                        .font(.headline)
-
+                    Text("Moments").font(.headline)
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
+                        HStack {
                             ForEach(checkpoint.moments) { moment in
                                 VStack {
                                     if let data = moment.imageData,
@@ -70,10 +68,7 @@ struct CheckpointDetailView: View {
                                             .cornerRadius(8)
                                             .overlay(Text("No Image").font(.caption))
                                     }
-
-                                    Text(moment.caption)
-                                        .font(.caption)
-                                        .lineLimit(1)
+                                    Text(moment.caption).font(.caption)
                                 }
                             }
                         }
@@ -92,7 +87,6 @@ struct CheckpointDetailView: View {
             .padding()
         }
         .navigationTitle(checkpoint.title)
-        .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingAddExpense) {
             AddExpenseView(participants: participants) { newExpense in
                 checkpoint.expenses.append(newExpense)
@@ -101,20 +95,7 @@ struct CheckpointDetailView: View {
         .sheet(isPresented: $showingAddMoment) {
             AddMomentView { newMoment in
                 checkpoint.moments.append(newMoment)
-            }
-        }
-    }
-
-    private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Location: \(checkpoint.location.latitude), \(checkpoint.location.longitude)")
-                .font(.caption)
-                .foregroundColor(.gray)
-
-            if let time = checkpoint.time {
-                Text("Time: \(time.formatted(.dateTime.hour().minute()))")
-                    .font(.caption)
-                    .foregroundColor(.gray)
+                logToFeed(moment: newMoment, checkpoint: checkpoint)
             }
         }
     }
