@@ -2,7 +2,7 @@
 //  GoogleSignInView.swift
 //  Blu
 //
-//  Created by Ethan Maldonado on 5/2/25.
+//  Created by Ethan Maldonado on 5/2/25
 //
 
 import SwiftUI
