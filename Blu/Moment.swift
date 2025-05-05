@@ -8,15 +8,34 @@
 import Foundation
 
 struct Moment: Identifiable, Codable, Hashable, Equatable {
-    let id: UUID
+    let id: String               // Firestore-friendly UUID
     var caption: String
-    var imageData: Data?
+    var imageURL: String?       // ✅ Must match Firestore key exactly
+    var createdBy: String
+    var timestamp: Date
 
-    init(id: UUID = UUID(), caption: String = "", imageData: Data? = nil) {
+    init(
+        id: String = UUID().uuidString,
+        caption: String,
+        imageURL: String? = nil,
+        createdBy: String,
+        timestamp: Date = Date()
+    ) {
         self.id = id
         self.caption = caption
-        self.imageData = imageData
+        self.imageURL = imageURL
+        self.createdBy = createdBy
+        self.timestamp = timestamp
+    }
+
+    // Custom decoder to gracefully handle missing fields
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+        self.caption = try container.decode(String.self, forKey: .caption)
+        self.imageURL = try container.decodeIfPresent(String.self, forKey: .imageURL)
+        self.createdBy = try container.decode(String.self, forKey: .createdBy)
+        self.timestamp = try container.decodeIfPresent(Date.self, forKey: .timestamp) ?? Date()
     }
 }
-
-

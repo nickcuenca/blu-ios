@@ -5,14 +5,12 @@
 //  Created by Nicolas Cuenca on 3/29/25.
 //
 
-//  EditHangoutView.swift
-//  Blu
-
 import SwiftUI
 import MapKit
+import FirebaseFirestore
 
 struct EditHangoutView: View {
-    @Binding var hangout: HangoutSession
+    var sessionId: String
     var isEditing: Bool = true
 
     @Environment(\.dismiss) var dismiss
@@ -51,18 +49,10 @@ struct EditHangoutView: View {
             }
             .navigationTitle(isEditing ? "Edit Hangout" : "New Hangout")
             .navigationBarItems(trailing: Button("Save") {
-                hangout.title = title
-                hangout.date = selectedDate
-                if let coord = selectedCoordinate {
-                    hangout.location = coord
-                }
-                dismiss()
+                saveChangesToFirestore()
             })
             .onAppear {
-                title = hangout.title
-                selectedDate = hangout.date
-                selectedCoordinate = hangout.location
-                region.center = hangout.location
+                loadExistingSessionData()
             }
             .sheet(isPresented: $showMapPicker) {
                 ZStack(alignment: .bottom) {
@@ -87,6 +77,51 @@ struct EditHangoutView: View {
                         .padding(.bottom, 20)
                     }
                 }
+            }
+        }
+    }
+
+    // MARK: - Firestore Logic
+
+    func loadExistingSessionData() {
+        let db = Firestore.firestore()
+        db.collection("hangoutSessions").document(sessionId).getDocument { snapshot, error in
+            if let data = snapshot?.data() {
+                self.title = data["title"] as? String ?? ""
+                self.selectedDate = (data["date"] as? Timestamp)?.dateValue() ?? Date()
+
+                if let loc = data["location"] as? [String: Double],
+                   let lat = loc["latitude"],
+                   let lon = loc["longitude"] {
+                    self.selectedCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+                    self.region.center = self.selectedCoordinate!
+                }
+            } else {
+                print("❌ Failed to load session: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }
+    }
+
+    func saveChangesToFirestore() {
+        let db = Firestore.firestore()
+        var updates: [String: Any] = [
+            "title": title,
+            "date": Timestamp(date: selectedDate)
+        ]
+
+        if let coord = selectedCoordinate {
+            updates["location"] = [
+                "latitude": coord.latitude,
+                "longitude": coord.longitude
+            ]
+        }
+
+        db.collection("hangoutSessions").document(sessionId).updateData(updates) { error in
+            if let error = error {
+                print("❌ Failed to update hangout: \(error)")
+            } else {
+                print("✅ Hangout updated.")
+                dismiss()
             }
         }
     }

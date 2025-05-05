@@ -11,7 +11,7 @@ import MapKit
 struct CreateHangoutViewWithLocation: View {
     @Binding var sessions: [HangoutSession]
     var onHangoutCreated: (() -> Void)? = nil
-    var preselectedCoordinate: CLLocationCoordinate2D? = nil // ✅ Optional prefill
+    var preselectedCoordinate: CLLocationCoordinate2D? = nil
 
     @Environment(\.dismiss) var dismiss
     @AppStorage("username") var username: String = ""
@@ -93,8 +93,9 @@ struct CreateHangoutViewWithLocation: View {
 
                     guard let coordinate = selectedCoordinate else { return }
 
+                    let generatedId = UUID().uuidString
                     let newSession = HangoutSession(
-                        id: UUID(),
+                        id: generatedId,
                         title: title,
                         date: selectedDate,
                         location: coordinate,
@@ -146,4 +147,3 @@ struct CreateHangoutViewWithLocation: View {
         }
     }
 }
-

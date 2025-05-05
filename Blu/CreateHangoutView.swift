@@ -81,7 +81,7 @@ struct CreateHangoutView: View {
                     }
 
                     let newSession = HangoutSession(
-                        id: UUID(),
+                        id: UUID().uuidString,
                         title: title,
                         date: selectedDate,
                         location: CLLocationCoordinate2D(latitude: 0, longitude: 0), // Placeholder

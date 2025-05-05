@@ -2,14 +2,9 @@ import FirebaseStorage
 import FirebaseFirestore
 import Foundation
 
-func logToFeed(moment: Moment, checkpoint: Checkpoint) {
+func logToFeed(moment: Moment, checkpoint: Checkpoint, imageData: Data) {
     guard let userID = UserDefaults.standard.string(forKey: "userID") else {
         print("❌ Missing user ID")
-        return
-    }
-
-    guard let imageData = moment.imageData else {
-        print("❌ No image data in moment")
         return
     }
 
@@ -40,14 +35,13 @@ func logToFeed(moment: Moment, checkpoint: Checkpoint) {
                 "username": username,
                 "location": checkpoint.title,
                 "timestamp": Timestamp(date: Date()),
-                "caption": moment.caption ?? "",
+                "caption": moment.caption,
                 "memoryThumbnailURLs": [downloadURL.absoluteString],
                 "isPublic": true
             ]
 
             let db = Firestore.firestore()
 
-            // Write to user's personal feed (optional if you want private logs)
             db.collection("users").document(userID).collection("feed").addDocument(data: feedEntry) { error in
                 if let error = error {
                     print("❌ User feed write failed: \(error.localizedDescription)")
@@ -56,7 +50,6 @@ func logToFeed(moment: Moment, checkpoint: Checkpoint) {
                 }
             }
 
-            // ✅ Also write to global feed for everyone to see
             db.collection("feed").addDocument(data: feedEntry) { error in
                 if let error = error {
                     print("❌ Global feed write failed: \(error.localizedDescription)")

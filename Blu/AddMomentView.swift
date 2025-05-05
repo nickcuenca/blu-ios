@@ -7,14 +7,22 @@
 
 import SwiftUI
 import PhotosUI
+import FirebaseStorage
+import FirebaseFirestore
 
 struct AddMomentView: View {
     @Environment(\.dismiss) var dismiss
-    var onSave: (Moment) -> Void
+    var sessionId: String
+    var checkpointId: String
+    var checkpointTitle: String
+    var onSave: () -> Void
+
+    @AppStorage("username") var username: String = ""
 
     @State private var caption = ""
-    @State private var selectedItem: PhotosPickerItem?
-    @State private var selectedImageData: Data?
+    @State private var selectedItems: [PhotosPickerItem] = []
+    @State private var selectedImagesData: [Data] = []
+    @State private var isUploading = false
 
     var body: some View {
         NavigationView {
@@ -23,51 +31,115 @@ struct AddMomentView: View {
                     TextField("Add a caption...", text: $caption)
                 }
 
-                Section(header: Text("Photo")) {
+                Section(header: Text("Photos")) {
                     PhotosPicker(
-                        selection: $selectedItem,
+                        selection: $selectedItems,
+                        maxSelectionCount: 10,
                         matching: .images,
                         photoLibrary: .shared()
                     ) {
                         HStack {
-                            Image(systemName: "photo")
-                            Text("Pick a photo")
+                            Image(systemName: "photo.on.rectangle.angled")
+                            Text("Pick photos")
                         }
                     }
 
-                    if let selectedImageData,
-                       let uiImage = UIImage(data: selectedImageData) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 200)
-                            .cornerRadius(10)
+                    if !selectedImagesData.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack {
+                                ForEach(selectedImagesData, id: \.self) { data in
+                                    if let image = UIImage(data: data) {
+                                        Image(uiImage: image)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 120, height: 120)
+                                            .clipped()
+                                            .cornerRadius(8)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.top, 8)
                     }
                 }
+
+                if isUploading {
+                    ProgressView("Uploading moments...")
+                }
             }
-            .navigationTitle("Add Moment")
+            .navigationTitle("Add Moments")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
+                    Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        let moment = Moment(caption: caption, imageData: selectedImageData)
-                        onSave(moment)
-                        dismiss()
+                        Task { await uploadMoments() }
                     }
-                    .disabled(caption.isEmpty)
+                    .disabled(caption.isEmpty || selectedImagesData.isEmpty || isUploading)
                 }
             }
-            .onChange(of: selectedItem) { newItem in
+            .onChange(of: selectedItems) { newItems in
+                selectedImagesData = []
                 Task {
-                    if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                        selectedImageData = data
+                    for item in newItems {
+                        if let data = try? await item.loadTransferable(type: Data.self) {
+                            selectedImagesData.append(data)
+                        }
                     }
                 }
             }
         }
+    }
+
+    func uploadMoments() async {
+        isUploading = true
+        let db = Firestore.firestore()
+        let storage = Storage.storage()
+
+        for (index, imageData) in selectedImagesData.enumerated() {
+            let momentId = UUID().uuidString
+            let imageRef = storage.reference().child("moments/\(momentId).jpg")
+
+            do {
+                _ = try await imageRef.putDataAsync(imageData)
+                let url = try await imageRef.downloadURL()
+
+                let momentData: [String: Any] = [
+                    "caption": caption,
+                    "imageURL": url.absoluteString,
+                    "createdBy": username,
+                    "timestamp": Timestamp(date: Date())
+                ]
+
+                try await db
+                    .collection("hangoutSessions")
+                    .document(sessionId)
+                    .collection("checkpoints")
+                    .document(checkpointId)
+                    .collection("moments")
+                    .document(momentId)
+                    .setData(momentData)
+
+                print("✅ Uploaded moment \(index + 1) → \(url.absoluteString)")
+
+                let feedEntry: [String: Any] = [
+                    "username": username,
+                    "location": checkpointTitle,
+                    "timestamp": Timestamp(date: Date()),
+                    "caption": caption,
+                    "memoryThumbnailURLs": [url.absoluteString],
+                    "isPublic": true
+                ]
+                try await db.collection("feed").addDocument(data: feedEntry)
+
+            } catch {
+                print("❌ Upload failed for image \(index + 1): \(error)")
+            }
+        }
+
+        isUploading = false
+        onSave()
+        dismiss()
     }
 }

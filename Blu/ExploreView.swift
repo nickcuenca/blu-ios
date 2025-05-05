@@ -1,12 +1,17 @@
+//
 //  ExploreView.swift
 //  Blu
+//
+//  Created by Nicolas Cuenca on 3/29/25.
+//
 
 import SwiftUI
 import MapKit
+import FirebaseFirestore
 
 struct ExploreView: View {
-    @Binding var sessions: [HangoutSession]
-
+    @Binding var sessions: [HangoutSession]  // ✅ Accept external binding
+    @State private var sessionIds: [String: String] = [:]
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 34.0689, longitude: -118.4452), // Default: UCLA
         span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
@@ -31,9 +36,8 @@ struct ExploreView: View {
             }
             .edgesIgnoringSafeArea(.all)
 
-            // Optional: Add button for future pin drops
             Button(action: {
-                // Placeholder: You can later add functionality to drop a pin or navigate to new hangout creation
+                // Optional: Add logic for future action
             }) {
                 Image(systemName: "plus.circle.fill")
                     .font(.largeTitle)
@@ -46,24 +50,5 @@ struct ExploreView: View {
             .padding()
         }
         .navigationTitle("Explore")
-    }
-}
-
-// Preview
-struct ExploreView_Previews: PreviewProvider {
-    @State static var dummySessions: [HangoutSession] = [
-        HangoutSession(
-            id: UUID(),
-            title: "BBQ at Sunset",
-            date: Date().addingTimeInterval(3600),
-            location: CLLocationCoordinate2D(latitude: 34.07, longitude: -118.44),
-            participants: ["Nick", "Max"],
-            expenses: [],
-            checkpoints: []
-        )
-    ]
-
-    static var previews: some View {
-        ExploreView(sessions: $dummySessions)
     }
 }

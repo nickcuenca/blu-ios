@@ -1,22 +1,29 @@
+//
+//  CreateSessionView.swift
+//  Blu
+//
+//  Created by Nicolas Cuenca on 3/29/25.
+//
+
 import SwiftUI
 import CoreLocation
+import FirebaseFirestore
 
 struct CreateSessionView: View {
     @AppStorage("username") var username: String = ""
     @State private var title = ""
     @State private var selectedParticipants: [String] = []
+    @Environment(\.dismiss) var dismiss
 
     let allPeople = ["Nick", "Max", "Armeen", "John", "Lisa"]
 
     var body: some View {
         NavigationView {
             Form {
-                // MARK: - Session Info
                 Section(header: Text("Session Info")) {
                     TextField("Title", text: $title)
                 }
 
-                // MARK: - Participants
                 Section(header: Text("Select Participants")) {
                     let sortedPeople = [username] + allPeople.filter { $0 != username }
                     ForEach(sortedPeople, id: \.self) { person in
@@ -34,7 +41,6 @@ struct CreateSessionView: View {
                     }
                 }
 
-                // MARK: - Create Button
                 Section {
                     Button("Create Hangout") {
                         var finalParticipants = selectedParticipants
@@ -42,21 +48,31 @@ struct CreateSessionView: View {
                             finalParticipants.append(username)
                         }
 
-                        let coordinate = CodableCoordinate(latitude: 0, longitude: 0)
-                        let newSession = HangoutSession(
-                            id: UUID(),
-                            title: title,
-                            date: Date(),
-                            location: coordinate.clLocationCoordinate,  // ✅ fixed here
-                            participants: finalParticipants,
-                            expenses: [],
-                            checkpoints: []
-                        )
+                        let coordinate = CLLocationCoordinate2D(latitude: 0, longitude: 0)
+                        let sessionId = UUID().uuidString
+                        let db = Firestore.firestore()
 
+                        let sessionData: [String: Any] = [
+                            "title": title,
+                            "date": Timestamp(date: Date()),
+                            "participants": finalParticipants,
+                            "location": [
+                                "latitude": coordinate.latitude,
+                                "longitude": coordinate.longitude
+                            ],
+                            "createdBy": username
+                        ]
 
-                        print("Created Session: \(newSession)")
-                        // Add logic to save or navigate
+                        db.collection("hangoutSessions").document(sessionId).setData(sessionData) { error in
+                            if let error = error {
+                                print("❌ Failed to create session: \(error)")
+                            } else {
+                                print("✅ Session created with ID: \(sessionId)")
+                                dismiss()
+                            }
+                        }
                     }
+                    .disabled(title.isEmpty || selectedParticipants.isEmpty)
                 }
             }
             .navigationTitle("New Hangout")

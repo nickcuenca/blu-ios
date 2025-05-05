@@ -1,7 +1,5 @@
 //  TabBarView.swift
 //  Blu
-//
-//  Created by Nicolas Cuenca on 3/28/25.
 
 import SwiftUI
 
@@ -10,7 +8,7 @@ struct TabBarView: View {
     @State private var previousTab = 0
     @State private var showCreationToast = false
     @State private var showModal = false
-    @State private var sessions: [HangoutSession] = []
+    @State private var sessions: [HangoutSession] = []  // ✅ Owns session state
 
     var body: some View {
         NavigationStack {
@@ -28,8 +26,7 @@ struct TabBarView: View {
                             Text("Explore")
                         }.tag(1)
 
-                    // Fake tab to trigger modal
-                    Text("")
+                    Text("") // Fake tab to trigger modal
                         .tabItem {
                             Image(systemName: "plus.circle")
                             Text("New")
@@ -56,7 +53,7 @@ struct TabBarView: View {
                     }
                 }
 
-                // Toast
+                // ✅ Toast overlay
                 VStack {
                     Spacer()
                     if showCreationToast {
@@ -82,65 +79,6 @@ struct TabBarView: View {
                     showCreationToast = true
                 })
             }
-        }
-    }
-}
-
-struct CreateSessionViewWrapper: View {
-    @Binding var sessions: [HangoutSession]
-    var onSessionCreated: () -> Void = {}
-
-    var body: some View {
-        CreateHangoutViewWithLocation(sessions: $sessions, onHangoutCreated: onSessionCreated)
-    }
-}
-
-struct NewCreationModal: View {
-    @Environment(\.dismiss) var dismiss
-    @Binding var sessions: [HangoutSession]
-    var onSessionCreated: () -> Void
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Button {
-                    dismiss()
-                    // Delay to prevent modal conflicts
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        // Navigate to Quick Add
-                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                           let root = windowScene.windows.first?.rootViewController {
-                            root.present(
-                                UIHostingController(
-                                    rootView: AddExpenseView(participants: [], onAdd: { _ in}
-                                                            )
-                                ),
-                                animated: true
-                            )
-                        }
-                    }
-                } label: {
-                    Label("Quick Add Expense", systemImage: "plus.circle")
-                }
-
-                Button {
-                    dismiss()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                           let root = windowScene.windows.first?.rootViewController {
-                            root.present(
-                                UIHostingController(rootView: CreateHangoutViewWithLocation(sessions: $sessions, onHangoutCreated: onSessionCreated)),
-                                animated: true
-                            )
-                        }
-                    }
-                } label: {
-                    Label("Create Hangout", systemImage: "calendar.badge.plus")
-                }
-            }
-            .navigationTitle("What would you like to add?")
         }
     }
 }

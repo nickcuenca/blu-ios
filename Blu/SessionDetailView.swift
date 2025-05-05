@@ -1,14 +1,22 @@
+//
 //  SessionDetailView.swift
 //  Blu
+//
+//  Created by Nicolas Cuenca on 3/27/25.
+//
 
 import SwiftUI
+import FirebaseFirestore
 import CoreLocation
 
 struct SessionDetailView: View {
-    @Binding var session: HangoutSession
+    var sessionId: String
     @AppStorage("username") var username: String = ""
 
-    @State private var selectedCheckpoint: Checkpoint? = nil
+    @State private var sessionTitle = ""
+    @State private var participants: [String] = []
+    @State private var checkpoints: [Checkpoint] = []
+
     @State private var showAllSummary = false
     @State private var showAllSettleUp = false
     @State private var showEditHangout = false
@@ -22,15 +30,19 @@ struct SessionDetailView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         headerSection
 
-                        if session.checkpoints.isEmpty {
+                        if checkpoints.isEmpty {
                             Text("No checkpoints yet.")
                                 .foregroundColor(.gray)
                                 .padding(.top, 10)
                         } else {
-                            ForEach(session.checkpoints) { checkpoint in
-                                Button {
-                                    selectedCheckpoint = checkpoint
-                                } label: {
+                            ForEach(checkpoints) { checkpoint in
+                                NavigationLink(destination:
+                                    CheckpointDetailView(
+                                        sessionId: sessionId,
+                                        checkpoint: .constant(checkpoint),
+                                        participants: participants
+                                    )
+                                ) {
                                     VStack(alignment: .leading, spacing: 8) {
                                         HStack {
                                             VStack(alignment: .leading, spacing: 4) {
@@ -54,12 +66,6 @@ struct SessionDetailView: View {
                                 .buttonStyle(PlainButtonStyle())
                             }
                         }
-
-                        if !session.checkpoints.flatMap({ $0.expenses }).isEmpty {
-                            summarySection
-                            Divider().padding(.vertical)
-                            settleUpSection
-                        }
                     }
                     .padding()
                 }
@@ -78,7 +84,11 @@ struct SessionDetailView: View {
                         .padding(.bottom, 12)
                 }
             }
-            .navigationTitle(session.title)
+            .navigationTitle(sessionTitle)
+            .onAppear {
+                fetchSessionMetadata()
+                fetchCheckpoints()
+            }
             .sheet(isPresented: $showingAddCheckpoint) {
                 VStack(spacing: 20) {
                     Text("Add Checkpoint")
@@ -88,13 +98,7 @@ struct SessionDetailView: View {
                         .padding()
 
                     Button("Save") {
-                        let newCheckpoint = Checkpoint(
-                            title: newCheckpointTitle,
-                            location: CLLocationCoordinate2D(latitude: 0, longitude: 0)
-                        )
-                        session.checkpoints.append(newCheckpoint)
-                        newCheckpointTitle = ""
-                        showingAddCheckpoint = false
+                        addCheckpoint(title: newCheckpointTitle)
                     }
                     .disabled(newCheckpointTitle.isEmpty)
 
@@ -106,86 +110,79 @@ struct SessionDetailView: View {
                 }
                 .padding()
             }
-            .sheet(isPresented: $showEditHangout) {
-                EditHangoutView(hangout: $session, isEditing: true)
+        }
+    }
+
+    // MARK: - Firebase Integration
+
+    func fetchSessionMetadata() {
+        let db = Firestore.firestore()
+        db.collection("hangoutSessions").document(sessionId).getDocument { snapshot, error in
+            if let error = error {
+                print("❌ Failed to fetch session: \(error)")
+                return
             }
-            .navigationDestination(item: $selectedCheckpoint) { checkpoint in
-                CheckpointDetailView(
-                    checkpoint: binding(for: checkpoint),
-                    participants: session.participants
-                )
-            }
+
+            guard let data = snapshot?.data() else { return }
+
+            self.sessionTitle = data["title"] as? String ?? "Unnamed"
+            self.participants = data["participants"] as? [String] ?? []
         }
     }
 
-    // MARK: - Binding Helper
-
-    private func binding(for checkpoint: Checkpoint) -> Binding<Checkpoint> {
-        guard let index = session.checkpoints.firstIndex(where: { $0.id == checkpoint.id }) else {
-            fatalError("Checkpoint not found in session")
-        }
-        return $session.checkpoints[index]
-    }
-
-    // MARK: - Summary Helpers
-
-    private func calculateSummary(for expense: Expense) -> [(String, (paid: Double, owes: Double))] {
-        var summary: [String: (paid: Double, owes: Double)] = [:]
-
-        for person in expense.participants {
-            summary[person] = (0, 0)
-        }
-
-        for (person, amount) in expense.itemizedBreakdown ?? [:] {
-            summary[person, default: (0, 0)].owes += amount
-        }
-
-        summary[expense.paidBy, default: (0, 0)].paid += expense.amount
-
-        return summary.map { ($0.key, $0.value) }
-    }
-
-    private func calculateSettleUp(summary: [String: (paid: Double, owes: Double)]) -> [(String, String, Double)] {
-        let netBalancesDict = summary.mapValues { $0.paid - $0.owes }
-        let netBalances = netBalancesDict.map { ($0.key, $0.value) }
-
-        var payers = netBalances.filter { $0.1 < 0 }
-        var receivers = netBalances.filter { $0.1 > 0 }
-
-        var result: [(String, String, Double)] = []
-
-        for (payer, payerBalance) in payers {
-            var payerOwes = -payerBalance
-            var updatedReceivers: [(String, Double)] = []
-
-            for (receiver, receiverBalance) in receivers {
-                if payerOwes == 0 {
-                    updatedReceivers.append((receiver, receiverBalance))
-                    continue
+    func fetchCheckpoints() {
+        let db = Firestore.firestore()
+        db.collection("hangoutSessions")
+            .document(sessionId)
+            .collection("checkpoints")
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("❌ Failed to fetch checkpoints: \(error)")
+                    return
                 }
 
-                let payment = min(receiverBalance, payerOwes)
-                if payment > 0 {
-                    result.append((payer, receiver, payment))
-                    payerOwes -= payment
-                    let remaining = receiverBalance - payment
-                    if remaining > 0 {
-                        updatedReceivers.append((receiver, remaining))
-                    }
+                guard let docs = snapshot?.documents else { return }
+
+                do {
+                    self.checkpoints = try docs.map { try $0.data(as: Checkpoint.self) }
+                } catch {
+                    print("❌ Failed to decode checkpoints: \(error)")
                 }
             }
-
-            receivers = updatedReceivers
-        }
-
-        return result
     }
 
-    // MARK: - Sections
+    func addCheckpoint(title: String) {
+        let db = Firestore.firestore()
+        let id = UUID()
+        let checkpoint = Checkpoint(
+            id: id,
+            title: title,
+            time: Date(),
+            location: CLLocationCoordinate2D(latitude: 0, longitude: 0),
+            expenses: [],
+            moments: []
+        )
+
+        do {
+            try db.collection("hangoutSessions")
+                .document(sessionId)
+                .collection("checkpoints")
+                .document(id.uuidString)
+                .setData(from: checkpoint)
+
+            self.checkpoints.append(checkpoint)
+            self.newCheckpointTitle = ""
+            self.showingAddCheckpoint = false
+        } catch {
+            print("❌ Failed to add checkpoint: \(error)")
+        }
+    }
+
+    // MARK: - Header
 
     private var headerSection: some View {
         HStack {
-            Text(session.title)
+            Text(sessionTitle)
                 .font(.largeTitle.bold())
                 .padding(.horizontal)
             Spacer()
@@ -197,63 +194,6 @@ struct SessionDetailView: View {
                     .padding(8)
                     .background(Color.gray.opacity(0.2))
                     .clipShape(Circle())
-            }
-        }
-    }
-
-    private var summarySection: some View {
-        let allSummaries = session.checkpoints.flatMap { $0.expenses }.flatMap { calculateSummary(for: $0) }
-        let summaryDict = Dictionary(grouping: allSummaries, by: { $0.0 }).mapValues {
-            $0.reduce((paid: 0.0, owes: 0.0)) { partial, next in
-                (partial.paid + next.1.paid, partial.owes + next.1.owes)
-            }
-        }
-        let summaryList = summaryDict.map { ($0.key, $0.value.paid, $0.value.owes) }
-
-        return VStack(alignment: .leading, spacing: 8) {
-            Text("Summary").font(.headline)
-
-            ForEach(summaryList.prefix(2), id: \.0) { name, paid, owes in
-                let net = paid - owes
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(name).font(.subheadline.bold())
-                        Text("Paid: $\(paid, specifier: "%.2f") | Owes: $\(owes, specifier: "%.2f")")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                    Spacer()
-                    Text("\(net >= 0 ? "+" : "")$\(net, specifier: "%.2f")")
-                        .foregroundColor(net >= 0 ? .green : .red)
-                        .bold()
-                }
-            }
-        }
-    }
-
-    private var settleUpSection: some View {
-        let allSummaries = session.checkpoints.flatMap { $0.expenses }.flatMap { calculateSummary(for: $0) }
-        let summaryDict = Dictionary(grouping: allSummaries, by: { $0.0 }).mapValues {
-            $0.reduce((paid: 0.0, owes: 0.0)) { partial, next in
-                (partial.paid + next.1.paid, partial.owes + next.1.owes)
-            }
-        }
-        let settlements = calculateSettleUp(summary: summaryDict)
-
-        return VStack(alignment: .leading, spacing: 8) {
-            Text("Settle Up").font(.headline)
-
-            ForEach(settlements.prefix(2), id: \.0) { (payer, receiver, amount) in
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("\(payer) pays \(receiver)")
-                        Text("➜ Pay via Venmo")
-                            .foregroundColor(.blue)
-                            .font(.caption)
-                    }
-                    Spacer()
-                    Text("$\(amount, specifier: "%.2f")").bold()
-                }
             }
         }
     }

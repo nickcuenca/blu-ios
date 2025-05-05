@@ -35,3 +35,16 @@ struct Checkpoint: Identifiable, Codable, Hashable {
         self.moments = moments
     }
 }
+
+extension Checkpoint {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.id = try container.decode(UUID.self, forKey: .id)
+        self.title = try container.decode(String.self, forKey: .title)
+        self.time = try container.decodeIfPresent(Date.self, forKey: .time)
+        self.location = try container.decode(CodableCoordinate.self, forKey: .location)
+        self.expenses = try container.decodeIfPresent([Expense].self, forKey: .expenses) ?? []
+        self.moments = try container.decodeIfPresent([Moment].self, forKey: .moments) ?? []
+    }
+}

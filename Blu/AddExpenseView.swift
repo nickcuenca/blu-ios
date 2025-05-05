@@ -1,16 +1,14 @@
-//
-//  AddExpenseView.swift
-//  Blu
-//
-//  Created by Nicolas Cuenca on 3/27/25.
-//
-
 import SwiftUI
+import FirebaseFirestore
 
 struct AddExpenseView: View {
     var participants: [String]
+    var sessionId: String
+    var checkpointId: String
     var onAdd: (Expense) -> Void
     @Environment(\.dismiss) var dismiss
+
+    @AppStorage("username") var username: String = ""
 
     @State private var title = ""
     @State private var amountText = ""
@@ -92,7 +90,6 @@ struct AddExpenseView: View {
                     .pickerStyle(SegmentedPickerStyle())
                 }
 
-                // MARK: - Custom Split UI
                 if splitType == .custom && totalAmount != nil && !selectedParticipants.isEmpty {
                     Section(header: Text("Custom Amounts")) {
                         ForEach(selectedParticipants, id: \.self) { person in
@@ -134,14 +131,30 @@ struct AddExpenseView: View {
                         : nil
 
                     let expense = Expense(
-                        id: UUID(),
                         title: title,
                         amount: amount,
                         paidBy: paidBy,
                         splitType: splitType,
                         participants: selectedParticipants,
-                        itemizedBreakdown: breakdown
+                        itemizedBreakdown: breakdown,
+                        createdBy: username
                     )
+
+                    let db = Firestore.firestore()
+                    let path = db
+                        .collection("hangoutSessions")
+                        .document(sessionId)
+                        .collection("checkpoints")
+                        .document(checkpointId)
+                        .collection("expenses")
+                        .document(expense.id.uuidString)
+
+                    do {
+                        try path.setData(from: expense)
+                    } catch {
+                        print("❌ Failed to write expense to Firestore: \(error)")
+                    }
+
                     onAdd(expense)
                     dismiss()
                 }

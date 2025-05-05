@@ -1,14 +1,26 @@
+//
+//  CheckpointDetailView.swift
+//  Blu
+//
+//  Created by Nicolas Cuenca on 3/27/25.
+//
+
 import SwiftUI
 import FirebaseStorage
 import FirebaseFirestore
-import Foundation
 
 struct CheckpointDetailView: View {
+    var sessionId: String
     @Binding var checkpoint: Checkpoint
     var participants: [String]
 
+    @State private var expenses: [Expense] = []
+    @State private var moments: [Moment] = []
     @State private var showingAddExpense = false
     @State private var showingAddMoment = false
+    @State private var selectedMoment: Moment? = nil  // ✅ Editor sheet trigger
+
+    let columns = [GridItem(.adaptive(minimum: 100), spacing: 12)]
 
     var body: some View {
         ScrollView {
@@ -23,12 +35,13 @@ struct CheckpointDetailView: View {
                         .foregroundColor(.gray)
                 }
 
-                if checkpoint.expenses.isEmpty {
+                // MARK: - Expenses
+                if expenses.isEmpty {
                     Text("No expenses yet")
                         .foregroundColor(.gray)
                 } else {
                     Text("Expenses").font(.headline)
-                    ForEach(checkpoint.expenses) { expense in
+                    ForEach(expenses) { expense in
                         VStack(alignment: .leading) {
                             Text(expense.title).bold()
                             Text("Amount: $\(expense.amount, specifier: "%.2f")")
@@ -49,30 +62,16 @@ struct CheckpointDetailView: View {
                 .foregroundColor(.white)
                 .cornerRadius(10)
 
-                if !checkpoint.moments.isEmpty {
-                    Text("Moments").font(.headline)
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(checkpoint.moments) { moment in
-                                VStack {
-                                    if let data = moment.imageData,
-                                       let uiImage = UIImage(data: data) {
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .frame(width: 120, height: 120)
-                                            .cornerRadius(8)
-                                    } else {
-                                        Rectangle()
-                                            .fill(Color.gray.opacity(0.3))
-                                            .frame(width: 120, height: 120)
-                                            .cornerRadius(8)
-                                            .overlay(Text("No Image").font(.caption))
-                                    }
-                                    Text(moment.caption).font(.caption)
-                                }
-                            }
-                        }
-                    }
+                // MARK: - Moments
+                if moments.isEmpty {
+                    Text("No moments yet")
+                        .foregroundColor(.gray)
+                } else {
+                    MomentGridView(
+                        sessionId: sessionId,
+                        checkpointId: checkpoint.id.uuidString,
+                        moments: $moments
+                    )
                 }
 
                 Button("Add Moment") {
@@ -87,16 +86,75 @@ struct CheckpointDetailView: View {
             .padding()
         }
         .navigationTitle(checkpoint.title)
+        .onAppear {
+            fetchExpenses()
+            fetchMoments()
+        }
         .sheet(isPresented: $showingAddExpense) {
-            AddExpenseView(participants: participants) { newExpense in
-                checkpoint.expenses.append(newExpense)
+            AddExpenseView(
+                participants: participants,
+                sessionId: sessionId,
+                checkpointId: checkpoint.id.uuidString
+            ) { newExpense in
+                expenses.append(newExpense)
             }
         }
         .sheet(isPresented: $showingAddMoment) {
-            AddMomentView { newMoment in
-                checkpoint.moments.append(newMoment)
-                logToFeed(moment: newMoment, checkpoint: checkpoint)
+            AddMomentView(
+                sessionId: sessionId,
+                checkpointId: checkpoint.id.uuidString,
+                checkpointTitle: checkpoint.title
+            ) {
+                fetchMoments()
             }
         }
+    }
+
+    // MARK: - Firebase Fetchers
+
+    func fetchExpenses() {
+        let db = Firestore.firestore()
+        db.collection("hangoutSessions")
+            .document(sessionId)
+            .collection("checkpoints")
+            .document(checkpoint.id.uuidString)
+            .collection("expenses")
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("❌ Failed to fetch expenses: \(error)")
+                    return
+                }
+
+                guard let documents = snapshot?.documents else { return }
+
+                do {
+                    expenses = try documents.map { try $0.data(as: Expense.self) }
+                } catch {
+                    print("❌ Error decoding expenses: \(error)")
+                }
+            }
+    }
+
+    func fetchMoments() {
+        let db = Firestore.firestore()
+        db.collection("hangoutSessions")
+            .document(sessionId)
+            .collection("checkpoints")
+            .document(checkpoint.id.uuidString)
+            .collection("moments")
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("❌ Failed to fetch moments: \(error)")
+                    return
+                }
+
+                guard let documents = snapshot?.documents else { return }
+
+                do {
+                    moments = try documents.map { try $0.data(as: Moment.self) }
+                } catch {
+                    print("❌ Error decoding moments: \(error)")
+                }
+            }
     }
 }

@@ -6,10 +6,9 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct HomeView: View {
-    @Binding var sessions: [HangoutSession]
-
     @AppStorage("username") var username: String = ""
     @AppStorage("userEmail") var userEmail: String = ""
     @AppStorage("venmoUsername") var venmoUsername: String = ""
@@ -17,11 +16,12 @@ struct HomeView: View {
     @AppStorage("zelleInfo") var zelleInfo: String = ""
     @AppStorage("userProfileImageData") var userProfileImageData: Data?
 
+    @Binding var sessions: [HangoutSession]
+    @State private var sessionIds: [String: String] = [:]
     @State private var path: [String] = []
 
     var balances: [String: (paid: Double, owes: Double)] {
         var totals: [String: (paid: Double, owes: Double)] = [:]
-
         for session in sessions {
             for checkpoint in session.checkpoints {
                 for expense in checkpoint.expenses {
@@ -36,35 +36,22 @@ struct HomeView: View {
                             return expense.itemizedBreakdown ?? [:]
                         }
                     }()
-                    
                     for (person, amount) in owedAmountPerPerson {
                         totals[person, default: (0, 0)].owes += amount
                     }
-                    
                     totals[expense.paidBy, default: (0, 0)].paid += totalAmount
                 }
             }
         }
-
         return totals
     }
 
     var owedToOthers: [String] {
-        let otherUsers = balances.keys.filter { $0 != username }
-        return otherUsers.filter {
-            let paidByThem = balances[$0]?.paid ?? 0
-            let owedByYou = balances[username]?.owes ?? 0
-            return owedByYou > paidByThem
-        }
+        balances.keys.filter { $0 != username && (balances[username]?.owes ?? 0) > (balances[$0]?.paid ?? 0) }
     }
 
     var othersOweYou: [String] {
-        let otherUsers = balances.keys.filter { $0 != username }
-        return otherUsers.filter {
-            let paidByYou = balances[username]?.paid ?? 0
-            let owesByThem = balances[$0]?.owes ?? 0
-            return paidByYou > owesByThem
-        }
+        balances.keys.filter { $0 != username && (balances[username]?.paid ?? 0) > (balances[$0]?.owes ?? 0) }
     }
 
     var upcomingSessions: [HangoutSession] {
@@ -81,7 +68,7 @@ struct HomeView: View {
                 // Quick Actions
                 Section {
                     HStack {
-                        NavigationLink("➕ New Hangout", destination: CreateHangoutViewWithLocation(sessions: $sessions))
+                        NavigationLink("➕ New Hangout", destination: CreateSessionView())
                         Spacer()
                     }.padding(.vertical, 4)
                 }
@@ -93,8 +80,8 @@ struct HomeView: View {
                             .foregroundColor(.gray)
                     } else {
                         ForEach(upcomingSessions) { session in
-                            if let index = sessions.firstIndex(where: { $0.id == session.id }) {
-                                NavigationLink(destination: SessionDetailView(session: $sessions[index])) {
+                            if let id = session.id, let sessionId = sessionIds[id] {
+                                NavigationLink(destination: SessionDetailView(sessionId: sessionId)) {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(session.title).font(.headline)
                                         Text(session.date, style: .date)
@@ -132,9 +119,7 @@ struct HomeView: View {
                     if !owedToOthers.isEmpty {
                         Text("You owe:").font(.subheadline)
                         ForEach(owedToOthers.prefix(2), id: \.self) { person in
-                            let paid = balances[person]?.paid ?? 0
-                            let owes = balances[username]?.owes ?? 0
-                            let diff = paid - owes
+                            let diff = (balances[person]?.paid ?? 0) - (balances[username]?.owes ?? 0)
                             HStack {
                                 Text("\(person):")
                                 Spacer()
@@ -145,16 +130,13 @@ struct HomeView: View {
                         if owedToOthers.count > 2 {
                             NavigationLink("Show All", value: "youOweList")
                                 .font(.caption)
-                                .foregroundColor(.blue)
                         }
                     }
 
                     if !othersOweYou.isEmpty {
                         Text("They owe you:").font(.subheadline)
                         ForEach(othersOweYou.prefix(2), id: \.self) { person in
-                            let paid = balances[username]?.paid ?? 0
-                            let owes = balances[person]?.owes ?? 0
-                            let diff = paid - owes
+                            let diff = (balances[username]?.paid ?? 0) - (balances[person]?.owes ?? 0)
                             HStack {
                                 Text("\(person):")
                                 Spacer()
@@ -165,23 +147,24 @@ struct HomeView: View {
                         if othersOweYou.count > 2 {
                             NavigationLink("Show All", value: "theyOweYouList")
                                 .font(.caption)
-                                .foregroundColor(.blue)
                         }
                     }
                 }
 
-                // Past Hangouts (All Sessions)
+                // Past Hangouts
                 Section(header: Text("Past Hangouts")) {
                     if pastSessions.isEmpty {
                         Text("No sessions yet. Create a hangout!")
                             .foregroundColor(.gray)
                     } else {
                         ForEach(pastSessions) { session in
-                            if let index = sessions.firstIndex(where: { $0.id == session.id }) {
-                                NavigationLink(destination: SessionDetailView(session: $sessions[index])) {
+                            if let id = session.id, let sessionId = sessionIds[id] {
+                                NavigationLink(destination: SessionDetailView(sessionId: sessionId)) {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(session.title).font(.headline)
-                                        Text(session.date, style: .date).font(.subheadline).foregroundColor(.gray)
+                                        Text(session.date, style: .date)
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
                                     }
                                 }
                             }
@@ -190,6 +173,7 @@ struct HomeView: View {
                 }
             }
             .navigationTitle("Home")
+            .onAppear { fetchSessions() }
             .navigationDestination(for: String.self) { value in
                 if value == "youOweList" {
                     PeopleBalanceDetailView(people: owedToOthers, balances: balances, username: username, isOwedToYou: false)
@@ -214,5 +198,39 @@ struct HomeView: View {
                 }
             }
         }
+    }
+
+    func fetchSessions() {
+        let db = Firestore.firestore()
+        db.collection("hangoutSessions")
+            .whereField("participants", arrayContains: username)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("❌ Failed to fetch sessions: \(error)")
+                    return
+                }
+
+                guard let docs = snapshot?.documents else { return }
+
+                var newSessions: [HangoutSession] = []
+                var newIds: [String: String] = [:]
+
+                for doc in docs {
+                    do {
+                        var session = try doc.data(as: HangoutSession.self)
+                        session.id = doc.documentID
+                        newSessions.append(session)
+
+                        if let id = session.id {
+                            newIds[id] = doc.documentID
+                        }
+                    } catch {
+                        print("❌ Failed to decode session: \(error)")
+                    }
+                }
+
+                self.sessions = newSessions
+                self.sessionIds = newIds
+            }
     }
 }
