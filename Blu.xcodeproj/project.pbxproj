@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		302586692DC4AC9E00213EB6 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 302586682DC4AC9E00213EB6 /* GoogleSignIn */; };
+		302586702DC4B26000213EB6 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3025866F2DC4B26000213EB6 /* FirebaseCore */; };
+		302586722DC4B27500213EB6 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 302586712DC4B27500213EB6 /* GoogleSignInSwift */; };
 		621585672DC0D781007E1EA8 /* FirebaseFirestoreCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 621585662DC0D781007E1EA8 /* FirebaseFirestoreCombine-Community */; };
 		621585692DC0D93D007E1EA8 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 621585682DC0D93D007E1EA8 /* FirebaseFirestore */; };
 		62AA69162DC0C6CF006AB4E3 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 62AA69152DC0C6CF006AB4E3 /* FirebaseAnalytics */; };
@@ -38,6 +41,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3025866C2DC4AE2600213EB6 /* Exceptions for "Blu" folder in "Blu" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 62EB12222D966407009F5CB1 /* Blu */;
+		};
 		62AA69122DC0C5C4006AB4E3 /* Exceptions for "Blu" folder in "BluTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -58,6 +68,7 @@
 		62EB12252D966407009F5CB1 /* Blu */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				3025866C2DC4AE2600213EB6 /* Exceptions for "Blu" folder in "Blu" target */,
 				62AA69122DC0C5C4006AB4E3 /* Exceptions for "Blu" folder in "BluTests" target */,
 				62AA69132DC0C5C4006AB4E3 /* Exceptions for "Blu" folder in "BluUITests" target */,
 			);
@@ -84,8 +95,11 @@
 				62AA69162DC0C6CF006AB4E3 /* FirebaseAnalytics in Frameworks */,
 				62AA691C2DC0C6CF006AB4E3 /* FirebaseStorage in Frameworks */,
 				62AA69182DC0C6CF006AB4E3 /* FirebaseAuth in Frameworks */,
+				302586722DC4B27500213EB6 /* GoogleSignInSwift in Frameworks */,
 				621585692DC0D93D007E1EA8 /* FirebaseFirestore in Frameworks */,
+				302586702DC4B26000213EB6 /* FirebaseCore in Frameworks */,
 				621585672DC0D781007E1EA8 /* FirebaseFirestoreCombine-Community in Frameworks */,
+				302586692DC4AC9E00213EB6 /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -159,6 +173,9 @@
 				62AA691B2DC0C6CF006AB4E3 /* FirebaseStorage */,
 				621585662DC0D781007E1EA8 /* FirebaseFirestoreCombine-Community */,
 				621585682DC0D93D007E1EA8 /* FirebaseFirestore */,
+				302586682DC4AC9E00213EB6 /* GoogleSignIn */,
+				3025866F2DC4B26000213EB6 /* FirebaseCore */,
+				302586712DC4B27500213EB6 /* GoogleSignInSwift */,
 			);
 			productName = Blu;
 			productReference = 62EB12232D966407009F5CB1 /* Blu.app */;
@@ -244,6 +261,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				62AA69142DC0C6CF006AB4E3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				302586672DC4AC9E00213EB6 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 62EB12242D966407009F5CB1 /* Products */;
@@ -442,8 +460,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Blu/Preview Content\"";
+				DEVELOPMENT_TEAM = FM34YU23RL;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Blu/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -479,8 +499,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Blu/Preview Content\"";
+				DEVELOPMENT_TEAM = FM34YU23RL;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Blu/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -635,6 +657,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		302586672DC4AC9E00213EB6 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
+			};
+		};
 		62AA69142DC0C6CF006AB4E3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -646,6 +676,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		302586682DC4AC9E00213EB6 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 302586672DC4AC9E00213EB6 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		3025866F2DC4B26000213EB6 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 62AA69142DC0C6CF006AB4E3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		302586712DC4B27500213EB6 /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 302586672DC4AC9E00213EB6 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
 		621585662DC0D781007E1EA8 /* FirebaseFirestoreCombine-Community */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 62AA69142DC0C6CF006AB4E3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
