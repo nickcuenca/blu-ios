@@ -17,6 +17,8 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleURLName</key>
+			<string></string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.googleusercontent.apps.377676799399-s78ntvsghdg0tltol4b1tfi91l8j4b7j</string>

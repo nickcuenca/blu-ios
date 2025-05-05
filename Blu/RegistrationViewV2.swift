@@ -22,6 +22,7 @@ struct RegistrationViewV2: View {
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var profileImage: UIImage? = nil
     @State private var step = 0
+    @State private var finished = false
 
     var body: some View {
         VStack(spacing: 30) {
@@ -117,7 +118,6 @@ struct RegistrationViewV2: View {
                 }
 
                 Button("Finish") {
-                    // Save to UserDefaults
                     username = nameInput
                     userHandle = handleInput
                     userPassword = passwordInput
@@ -126,12 +126,10 @@ struct RegistrationViewV2: View {
                     cashAppTag = cashAppInput
                     zelleInfo = zelleInput
 
-                    // Generate and save userID
                     let userID = UUID().uuidString
                     UserDefaults.standard.set(userID, forKey: "userID")
                     UserDefaults.standard.set(nameInput, forKey: "username")
 
-                    // Firestore user entry
                     let db = Firestore.firestore()
                     let userData: [String: Any] = [
                         "username": nameInput,
@@ -152,17 +150,28 @@ struct RegistrationViewV2: View {
                     step += 1
                 }
 
-            default:
+            case 6:
                 Text("You're all set, \(username)!")
                     .font(.title2)
                     .padding()
                 Text("Launching Blü...")
                     .foregroundColor(.gray)
                 ProgressView()
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            finished = true
+                        }
+                    }
+
+            default:
+                EmptyView()
             }
         }
         .padding()
         .animation(.easeInOut, value: step)
+        .fullScreenCover(isPresented: $finished) {
+            TabBarView()
+        }
     }
 }
 
