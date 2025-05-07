@@ -89,15 +89,17 @@ struct MomentEditorView: View {
             .collection("moments")
             .document(moment.id)
 
-        do {
-            try await docRef.updateData(["caption": newCaption])
-            onUpdate(newCaption)
-            dismiss()
-        } catch {
-            print("❌ Failed to update caption: \(error)")
+        await MainActor.run {
+            docRef.updateData(["caption": newCaption]) { error in
+                if let error = error {
+                    print("❌ Failed to update caption: \(error)")
+                } else {
+                    onUpdate(newCaption)
+                    dismiss()
+                }
+                isSaving = false
+            }
         }
-
-        isSaving = false
     }
 
     func deleteMoment() async {
@@ -115,8 +117,8 @@ struct MomentEditorView: View {
         do {
             try await docRef.delete()
 
-            if let urlStr = moment.imageURL,
-               let imageRef = try? storage.reference(forURL: urlStr) {
+            if let urlStr = moment.imageURL {
+                let imageRef = storage.reference(forURL: urlStr)
                 try await imageRef.delete()
             }
 

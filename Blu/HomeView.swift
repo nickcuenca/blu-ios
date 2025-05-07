@@ -63,7 +63,7 @@ struct HomeView: View {
     }
 
     var body: some View {
-        NavigationStack(path: $path) {
+        VStack {
             List {
                 // Quick Actions
                 Section {
@@ -172,15 +172,6 @@ struct HomeView: View {
                     }
                 }
             }
-            .navigationTitle("Home")
-            .onAppear { fetchSessions() }
-            .navigationDestination(for: String.self) { value in
-                if value == "youOweList" {
-                    PeopleBalanceDetailView(people: owedToOthers, balances: balances, username: username, isOwedToYou: false)
-                } else if value == "theyOweYouList" {
-                    PeopleBalanceDetailView(people: othersOweYou, balances: balances, username: username, isOwedToYou: true)
-                }
-            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     NavigationLink(destination: ProfileViewEnhanced()) {
@@ -196,6 +187,15 @@ struct HomeView: View {
                         }
                     }
                 }
+            }
+        }
+        .navigationTitle("Home")
+        .onAppear { fetchSessions() }
+        .navigationDestination(for: String.self) { value in
+            if value == "youOweList" {
+                PeopleBalanceDetailView(people: owedToOthers, balances: balances, username: username, isOwedToYou: false)
+            } else if value == "theyOweYouList" {
+                PeopleBalanceDetailView(people: othersOweYou, balances: balances, username: username, isOwedToYou: true)
             }
         }
     }

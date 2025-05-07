@@ -14,59 +14,57 @@ struct SocialFeedView: View {
     @State private var feedItems: [FeedItem] = []
 
     var body: some View {
-        NavigationView {
-            List(feedItems.sorted(by: { $0.timestamp > $1.timestamp })) { item in
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Text("\(item.username) recently checked into")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                        Text(item.location)
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                    }
+        List(feedItems.sorted(by: { $0.timestamp > $1.timestamp })) { item in
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Text("\(item.username) recently checked into")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                    Text(item.location)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                }
 
-                    if let caption = item.caption, !caption.isEmpty {
-                        Text(caption)
-                            .font(.body)
-                    }
+                if let caption = item.caption, !caption.isEmpty {
+                    Text(caption)
+                        .font(.body)
+                }
 
-                    if !item.memoryThumbnailURLs.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack {
-                                ForEach(item.memoryThumbnailURLs, id: \.self) { urlString in
-                                    AsyncImage(url: URL(string: urlString)) { phase in
-                                        switch phase {
-                                        case .empty:
-                                            ProgressView()
-                                        case .success(let image):
-                                            image
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(width: 100, height: 100)
-                                                .clipped()
-                                                .cornerRadius(8)
-                                        case .failure:
-                                            Image(systemName: "photo")
-                                        @unknown default:
-                                            EmptyView()
-                                        }
+                if !item.memoryThumbnailURLs.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack {
+                            ForEach(item.memoryThumbnailURLs, id: \.self) { urlString in
+                                AsyncImage(url: URL(string: urlString)) { phase in
+                                    switch phase {
+                                    case .empty:
+                                        ProgressView()
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: 100, height: 100)
+                                            .clipped()
+                                            .cornerRadius(8)
+                                    case .failure:
+                                        Image(systemName: "photo")
+                                    @unknown default:
+                                        EmptyView()
                                     }
                                 }
                             }
                         }
                     }
-
-                    Text(item.timestamp.formatted(date: .abbreviated, time: .shortened))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
                 }
-                .padding(.vertical, 8)
+
+                Text(item.timestamp.formatted(date: .abbreviated, time: .shortened))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
-            .navigationTitle("Friends Feed")
-            .onAppear {
-                fetchFeed()
-            }
+            .padding(.vertical, 8)
+        }
+        // Removed NavigationView and .navigationTitle("Friends Feed")
+        .onAppear {
+            fetchFeed()
         }
     }
 

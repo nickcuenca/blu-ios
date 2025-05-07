@@ -79,13 +79,11 @@ struct AddMomentView: View {
                     .disabled(caption.isEmpty || selectedImagesData.isEmpty || isUploading)
                 }
             }
-            .onChange(of: selectedItems) { newItems in
+            .task(id: selectedItems) {
                 selectedImagesData = []
-                Task {
-                    for item in newItems {
-                        if let data = try? await item.loadTransferable(type: Data.self) {
-                            selectedImagesData.append(data)
-                        }
+                for item in selectedItems {
+                    if let data = try? await item.loadTransferable(type: Data.self) {
+                        selectedImagesData.append(data)
                     }
                 }
             }
