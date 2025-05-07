@@ -1,6 +1,7 @@
 import SwiftUI
 import PhotosUI
 import FirebaseFirestore
+import FirebaseStorage
 
 struct RegistrationViewV2: View {
     @AppStorage("username") var username: String = ""
@@ -131,24 +132,34 @@ struct RegistrationViewV2: View {
                     UserDefaults.standard.set(nameInput, forKey: "username")
 
                     let db = Firestore.firestore()
-                    let userData: [String: Any] = [
-                        "username": nameInput,
-                        "handle": handleInput,
-                        "email": emailInput,
-                        "friends": [],
-                        "createdAt": Timestamp(date: Date())
-                    ]
 
-                    db.collection("users").document(userID).setData(userData) { error in
-                        if let error = error {
-                            print("❌ Error saving user: \(error)")
-                        } else {
-                            print("✅ User saved to Firestore")
+                    // If they uploaded a profile image
+                    if let imageData = profileImage?.jpegData(compressionQuality: 0.8) {
+                        let storageRef = Storage.storage().reference().child("profileImages/\(userID).jpg")
+                        storageRef.putData(imageData, metadata: nil) { metadata, error in
+                            if let error = error {
+                                print("❌ Image upload error: \(error)")
+                                saveUserToFirestore(userID: userID, profileImageURL: nil)
+                                return
+                            }
+
+                            storageRef.downloadURL { url, error in
+                                if let url = url {
+                                    saveUserToFirestore(userID: userID, profileImageURL: url.absoluteString)
+                                } else {
+                                    print("❌ Couldn't get download URL")
+                                    saveUserToFirestore(userID: userID, profileImageURL: nil)
+                                }
+                            }
                         }
+                    } else {
+                        // No image selected
+                        saveUserToFirestore(userID: userID, profileImageURL: nil)
                     }
 
                     step += 1
                 }
+
 
             case 6:
                 Text("You're all set, \(username)!")
@@ -173,7 +184,34 @@ struct RegistrationViewV2: View {
             TabBarView()
         }
     }
+    func saveUserToFirestore(userID: String, profileImageURL: String?) {
+        let db = Firestore.firestore()
+
+        var userData: [String: Any] = [
+            "username": nameInput,
+            "handle": handleInput,
+            "email": emailInput,
+            "friends": [],
+            "createdAt": Timestamp(date: Date()),
+            "venmo": venmoInput,
+            "cashApp": cashAppInput,
+            "zelle": zelleInput
+        ]
+
+        if let profileImageURL = profileImageURL {
+            userData["profileImageURL"] = profileImageURL
+        }
+
+        db.collection("users").document(userID).setData(userData) { error in
+            if let error = error {
+                print("❌ Error saving user: \(error)")
+            } else {
+                print("✅ User saved to Firestore with image")
+            }
+        }
+    }
 }
+
 
 struct RegistrationViewV2_Previews: PreviewProvider {
     static var previews: some View {

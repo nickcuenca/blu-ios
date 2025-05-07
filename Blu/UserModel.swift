@@ -14,4 +14,5 @@ struct BluUser: Identifiable {
     var email: String
     var friends: [String]
     var createdAt: Date
+    var profileImageURL: String?
 }
