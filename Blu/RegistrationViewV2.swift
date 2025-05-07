@@ -131,7 +131,7 @@ struct RegistrationViewV2: View {
                     UserDefaults.standard.set(userID, forKey: "userID")
                     UserDefaults.standard.set(nameInput, forKey: "username")
 
-                    let db = Firestore.firestore()
+                    _ = Firestore.firestore()
 
                     // If they uploaded a profile image
                     if let imageData = profileImage?.jpegData(compressionQuality: 0.8) {
