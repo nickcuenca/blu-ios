@@ -1,3 +1,9 @@
+//
+//  ProfileViewEnhanced.swift
+//  Blu
+//
+//  Created by Nicolas Cuenca on 5/5/25.
+
 import SwiftUI
 import FirebaseFirestore
 import FirebaseStorage
@@ -15,6 +21,14 @@ struct ProfileViewEnhanced: View {
     @AppStorage("instagram")       private var instagram: String = ""
     @AppStorage("snapchat")        private var snapchat: String = ""
     @AppStorage("tiktok")          private var tiktok: String = ""
+    @AppStorage("bio")             private var bio: String = ""
+    @AppStorage("phoneNumber")     private var phoneNumber: String = ""
+    @AppStorage("defaultPayment")  private var defaultPaymentMethod: String = ""
+
+    @State private var tempBio = ""
+    @State private var tempPhone = ""
+    @State private var tempDefaultPayment = ""
+
 
     @State private var profileImage: UIImage? = nil
     @State private var selectedPhoto: PhotosPickerItem? = nil
@@ -24,7 +38,6 @@ struct ProfileViewEnhanced: View {
     @State private var showConflictAlert = false
     @State private var joinDateString: String = ""
 
-    // editable fields
     @State private var tempNameInput = ""
     @State private var tempHandleInput = ""
     @State private var tempEmailInput = ""
@@ -129,6 +142,9 @@ struct ProfileViewEnhanced: View {
             TextField("Name", text: $tempNameInput)
             TextField("Handle", text: $tempHandleInput)
             TextField("Email", text: $tempEmailInput)
+            TextField("Bio", text: $tempBio)
+            TextField("Phone Number", text: $tempPhone)
+            TextField("Default Payment", text: $tempDefaultPayment)
             paymentSocialFields.textFieldStyle(.roundedBorder)
             Button("Save Changes") {
                 Task { await saveChanges() }
@@ -141,45 +157,35 @@ struct ProfileViewEnhanced: View {
     private var readOnlyFormSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             if !venmoUsername.isEmpty {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Venmo").font(.caption).foregroundColor(.gray)
-                    Label(venmoUsername, systemImage: "creditcard")
-                }
+                labelledGroup(label: "Venmo", icon: "creditcard", value: venmoUsername)
             }
             if !cashAppTag.isEmpty {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Cash App").font(.caption).foregroundColor(.gray)
-                    Label(cashAppTag, systemImage: "dollarsign.circle")
-                }
+                labelledGroup(label: "Cash App", icon: "dollarsign.circle", value: cashAppTag)
             }
             if !zelleInfo.isEmpty {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Zelle").font(.caption).foregroundColor(.gray)
-                    Label(zelleInfo, systemImage: "envelope")
-                }
+                labelledGroup(label: "Zelle", icon: "envelope", value: zelleInfo)
             }
             if !instagram.isEmpty {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Instagram").font(.caption).foregroundColor(.gray)
-                    Label(instagram, systemImage: "camera")
-                }
+                labelledGroup(label: "Instagram", icon: "camera", value: instagram)
             }
             if !snapchat.isEmpty {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Snapchat").font(.caption).foregroundColor(.gray)
-                    Label(snapchat, systemImage: "bolt.fill")
-                }
+                labelledGroup(label: "Snapchat", icon: "bolt.fill", value: snapchat)
             }
             if !tiktok.isEmpty {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("TikTok").font(.caption).foregroundColor(.gray)
-                    Label(tiktok, systemImage: "music.note")
-                }
+                labelledGroup(label: "TikTok", icon: "music.note", value: tiktok)
+            }
+            if !bio.isEmpty {
+                labelledGroup(label: "Bio", icon: "quote.bubble", value: bio)
+            }
+            if !phoneNumber.isEmpty {
+                labelledGroup(label: "Phone", icon: "phone", value: phoneNumber)
+            }
+            if !defaultPaymentMethod.isEmpty {
+                labelledGroup(label: "Default Payment", icon: "creditcard.fill", value: defaultPaymentMethod)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-
 
     private var friendsPreviewSection: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -223,6 +229,13 @@ struct ProfileViewEnhanced: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    private func labelledGroup(label: String, icon: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label).font(.caption).foregroundColor(.gray)
+            Label(value, systemImage: icon)
+        }
+    }
+
     private var settingsSheet: some View {
         NavigationStack {
             Form {
@@ -252,10 +265,6 @@ struct ProfileViewEnhanced: View {
         }
     }
 
-    private func labelledRow(_ icon: String, _ value: String) -> some View {
-        HStack { Label(value, systemImage: icon); Spacer() }
-    }
-
     private func toggleEditing() {
         if editing {
             editing = false
@@ -269,6 +278,9 @@ struct ProfileViewEnhanced: View {
             tempInstagram   = instagram
             tempSnapchat    = snapchat
             tempTiktok      = tiktok
+            tempBio = bio
+            tempPhone = phoneNumber
+            tempDefaultPayment = defaultPaymentMethod
             editing         = true
         }
     }
@@ -282,6 +294,9 @@ struct ProfileViewEnhanced: View {
         userHandle    = tempHandleInput
         userEmail     = tempEmailInput
         venmoUsername = tempVenmo
+        bio = tempBio
+        phoneNumber = tempPhone
+        defaultPaymentMethod = tempDefaultPayment
         cashAppTag    = tempCashApp
         zelleInfo     = tempZelle
         instagram     = tempInstagram
@@ -311,7 +326,7 @@ struct ProfileViewEnhanced: View {
                 profileImage = uiImage
             }
         } catch {
-            print("❌ Failed to fetch profile image: \(error)")
+            print("2757fe0f Failed to fetch profile image: \(error)")
         }
     }
 
@@ -324,7 +339,7 @@ struct ProfileViewEnhanced: View {
                 "profileImageURL": url.absoluteString
             ])
         } catch {
-            print("❌ Upload failed: \(error)")
+            print("2757fe0f Upload failed: \(error)")
         }
     }
 
@@ -363,7 +378,7 @@ struct ProfileViewEnhanced: View {
                 )
             }
         } catch {
-            print("❌ Failed to fetch hangouts: \(error)")
+            print("2757fe0f Failed to fetch hangouts: \(error)")
         }
     }
 
@@ -378,7 +393,7 @@ struct ProfileViewEnhanced: View {
                 joinDateString = formatter.string(from: timestamp.dateValue())
             }
         } catch {
-            print("❌ Failed to fetch join date: \(error)")
+            print("2757fe0f Failed to fetch join date: \(error)")
         }
     }
 
@@ -397,7 +412,7 @@ struct ProfileViewEnhanced: View {
 
             return !handleSnapshot.documents.isEmpty || !emailSnapshot.documents.isEmpty
         } catch {
-            print("❌ Conflict check failed: \(error)")
+            print("2757fe0f Conflict check failed: \(error)")
             return true
         }
     }
