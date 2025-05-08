@@ -4,10 +4,7 @@ import FirebaseStorage
 import PhotosUI
 import FirebaseAuth
 
-/// A modernized user‑profile screen with editable payment + social handles,
-/// tappable friends list, profile‑photo picker, and a settings sheet.
 struct ProfileViewEnhanced: View {
-    // MARK: ‑ Stored user defaults
     @AppStorage("userID")          private var currentUserID: String = ""
     @AppStorage("username")        private var username: String = ""
     @AppStorage("userHandle")      private var userHandle: String = ""
@@ -19,26 +16,28 @@ struct ProfileViewEnhanced: View {
     @AppStorage("snapchat")        private var snapchat: String = ""
     @AppStorage("tiktok")          private var tiktok: String = ""
 
-    // MARK: ‑ View state
     @State private var profileImage: UIImage? = nil
     @State private var selectedPhoto: PhotosPickerItem? = nil
+    @State private var editing = false
+    @State private var showSettings = false
+    @State private var signedOut = false
+    @State private var showConflictAlert = false
+    @State private var joinDateString: String = ""
 
-    @State private var editing        = false
-    @State private var showSettings   = false
-    @State private var signedOut      = false
+    // editable fields
+    @State private var tempNameInput = ""
+    @State private var tempHandleInput = ""
+    @State private var tempEmailInput = ""
+    @State private var tempVenmo = ""
+    @State private var tempCashApp = ""
+    @State private var tempZelle = ""
+    @State private var tempInstagram = ""
+    @State private var tempSnapchat = ""
+    @State private var tempTiktok = ""
 
-    // temp fields while editing
-    @State private var tempVenmo      = ""
-    @State private var tempCashApp    = ""
-    @State private var tempZelle      = ""
-    @State private var tempInstagram  = ""
-    @State private var tempSnapchat   = ""
-    @State private var tempTiktok     = ""
-
-    // friends
     @State private var friends: [UserPreview] = []
+    @State private var pastHangouts: [HangoutPreview] = []
 
-    // MARK: ‑ Body
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
@@ -50,7 +49,9 @@ struct ProfileViewEnhanced: View {
                         if editing { editableFormSection } else { readOnlyFormSection }
                     }
                     Divider()
-                    friendsSection
+                    friendsPreviewSection
+                    Divider()
+                    memoriesSection
                 }
                 .padding()
             }
@@ -60,7 +61,9 @@ struct ProfileViewEnhanced: View {
                     Button(editing ? "Cancel" : "Edit") { toggleEditing() }
                 }
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button { showSettings = true } label: { Image(systemName: "gear") }
+                    Button { showSettings = true } label: {
+                        Image(systemName: "gear")
+                    }
                 }
             }
             .navigationDestination(for: UserPreview.self) { friend in
@@ -71,17 +74,20 @@ struct ProfileViewEnhanced: View {
             .task {
                 await fetchProfileImage()
                 await fetchFriends()
+                await fetchPastHangouts()
+                await fetchJoinDate()
+            }
+            .alert("Username or email already in use", isPresented: $showConflictAlert) {
+                Button("OK", role: .cancel) {}
             }
         }
     }
 
-    // MARK: ‑ Sections
     private var profileImageSection: some View {
         VStack(spacing: 12) {
             Group {
                 if let image = profileImage {
-                    Image(uiImage: image)
-                        .resizable()
+                    Image(uiImage: image).resizable()
                 } else {
                     Image(systemName: "person.circle.fill")
                         .symbolRenderingMode(.hierarchical)
@@ -98,10 +104,9 @@ struct ProfileViewEnhanced: View {
             }
             .onChange(of: selectedPhoto) { _, newItem in
                 Task {
-                    guard let item  = newItem,
-                          let data  = try? await item.loadTransferable(type: Data.self),
+                    guard let item = newItem,
+                          let data = try? await item.loadTransferable(type: Data.self),
                           let image = UIImage(data: data) else { return }
-
                     profileImage = image
                     await uploadProfileImage(data: data)
                 }
@@ -113,34 +118,77 @@ struct ProfileViewEnhanced: View {
         VStack(spacing: 4) {
             Text(username).font(.title2).bold()
             Text("@\(userHandle)").font(.subheadline).foregroundColor(.secondary)
+            if !joinDateString.isEmpty {
+                Text("Joined \(joinDateString)").font(.caption).foregroundColor(.gray)
+            }
         }
     }
 
     private var editableFormSection: some View {
         VStack(spacing: 16) {
-            paymentSocialFields
-                .textFieldStyle(.roundedBorder)
-            Button("Save Changes", action: saveChanges)
-                .buttonStyle(.borderedProminent)
+            TextField("Name", text: $tempNameInput)
+            TextField("Handle", text: $tempHandleInput)
+            TextField("Email", text: $tempEmailInput)
+            paymentSocialFields.textFieldStyle(.roundedBorder)
+            Button("Save Changes") {
+                Task { await saveChanges() }
+            }
+            .buttonStyle(.borderedProminent)
         }
+        .textFieldStyle(.roundedBorder)
     }
 
     private var readOnlyFormSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            labelledRow("creditcard",  venmoUsername)
-            labelledRow("dollarsign.circle", cashAppTag)
-            labelledRow("envelope",    zelleInfo)
-            labelledRow("camera",      instagram)
-            labelledRow("bolt.fill",   snapchat)
-            labelledRow("music.note",  tiktok)
+        VStack(alignment: .leading, spacing: 12) {
+            if !venmoUsername.isEmpty {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Venmo").font(.caption).foregroundColor(.gray)
+                    Label(venmoUsername, systemImage: "creditcard")
+                }
+            }
+            if !cashAppTag.isEmpty {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Cash App").font(.caption).foregroundColor(.gray)
+                    Label(cashAppTag, systemImage: "dollarsign.circle")
+                }
+            }
+            if !zelleInfo.isEmpty {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Zelle").font(.caption).foregroundColor(.gray)
+                    Label(zelleInfo, systemImage: "envelope")
+                }
+            }
+            if !instagram.isEmpty {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Instagram").font(.caption).foregroundColor(.gray)
+                    Label(instagram, systemImage: "camera")
+                }
+            }
+            if !snapchat.isEmpty {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Snapchat").font(.caption).foregroundColor(.gray)
+                    Label(snapchat, systemImage: "bolt.fill")
+                }
+            }
+            if !tiktok.isEmpty {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("TikTok").font(.caption).foregroundColor(.gray)
+                    Label(tiktok, systemImage: "music.note")
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var friendsSection: some View {
+
+    private var friendsPreviewSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Friends").font(.headline)
-            ForEach(friends) { friend in
+            HStack {
+                Text("Friends").font(.headline)
+                Spacer()
+                NavigationLink("Show All") { FullFriendsListView(friends: friends) }
+            }
+            ForEach(friends.prefix(3)) { friend in
                 NavigationLink(value: friend) {
                     HStack {
                         VStack(alignment: .leading) {
@@ -148,8 +196,7 @@ struct ProfileViewEnhanced: View {
                             Text("@\(friend.handle)").font(.caption).foregroundColor(.secondary)
                         }
                         Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
+                        Image(systemName: "chevron.right").foregroundColor(.secondary)
                     }
                     .padding(.vertical, 4)
                 }
@@ -158,7 +205,24 @@ struct ProfileViewEnhanced: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: ‑ Settings sheet
+    private var memoriesSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Hangout Memories").font(.headline)
+                Spacer()
+                NavigationLink("See All") { FullHangoutHistoryView(userID: currentUserID) }
+            }
+            ForEach(pastHangouts.prefix(2)) { hangout in
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(hangout.title).bold()
+                    Text(hangout.dateFormatted).font(.caption).foregroundColor(.secondary)
+                }
+                .padding(.vertical, 4)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     private var settingsSheet: some View {
         NavigationStack {
             Form {
@@ -169,15 +233,18 @@ struct ProfileViewEnhanced: View {
                 }
             }
             .navigationTitle("Settings")
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { showSettings = false } } }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") { showSettings = false }
+                }
+            }
         }
     }
 
-    // MARK: ‑ Helpers (UI)
     private var paymentSocialFields: some View {
         VStack(spacing: 10) {
             TextField("Venmo",     text: $tempVenmo)
-            TextField("Cash App",  text: $tempCashApp)
+            TextField("Cash App",  text: $tempCashApp)
             TextField("Zelle",     text: $tempZelle)
             TextField("Instagram", text: $tempInstagram)
             TextField("Snapchat",  text: $tempSnapchat)
@@ -185,25 +252,35 @@ struct ProfileViewEnhanced: View {
         }
     }
 
-    private func labelledRow(_ systemName: String, _ value: String) -> some View {
-        HStack { Label(value, systemImage: systemName); Spacer() }
+    private func labelledRow(_ icon: String, _ value: String) -> some View {
+        HStack { Label(value, systemImage: icon); Spacer() }
     }
 
     private func toggleEditing() {
         if editing {
             editing = false
         } else {
-            tempVenmo     = venmoUsername
-            tempCashApp   = cashAppTag
-            tempZelle     = zelleInfo
-            tempInstagram = instagram
-            tempSnapchat  = snapchat
-            tempTiktok    = tiktok
-            editing       = true
+            tempNameInput   = username
+            tempHandleInput = userHandle
+            tempEmailInput  = userEmail
+            tempVenmo       = venmoUsername
+            tempCashApp     = cashAppTag
+            tempZelle       = zelleInfo
+            tempInstagram   = instagram
+            tempSnapchat    = snapchat
+            tempTiktok      = tiktok
+            editing         = true
         }
     }
 
-    private func saveChanges() {
+    private func saveChanges() async {
+        if await isHandleOrEmailTaken(except: currentUserID, handle: tempHandleInput, email: tempEmailInput) {
+            showConflictAlert = true
+            return
+        }
+        username      = tempNameInput
+        userHandle    = tempHandleInput
+        userEmail     = tempEmailInput
         venmoUsername = tempVenmo
         cashAppTag    = tempCashApp
         zelleInfo     = tempZelle
@@ -213,16 +290,29 @@ struct ProfileViewEnhanced: View {
         editing       = false
     }
 
-    // MARK: ‑ Helpers (data I/O)
+    private func signOut() {
+        do {
+            try Auth.auth().signOut()
+            signedOut = true
+        } catch {
+            print("Error signing out: \(error)")
+        }
+    }
+
     @MainActor
     private func fetchProfileImage() async {
         let db = Firestore.firestore()
-        guard let doc = try? await db.collection("users").document(currentUserID).getDocument(),
-              let urlString = doc.data()? ["profileImageURL"] as? String,
-              let url = URL(string: urlString),
-              let data = try? Data(contentsOf: url),
-              let uiImage = UIImage(data: data) else { return }
-        profileImage = uiImage
+        do {
+            let doc = try await db.collection("users").document(currentUserID).getDocument()
+            guard let urlString = doc.data()? ["profileImageURL"] as? String,
+                  let url = URL(string: urlString) else { return }
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let uiImage = UIImage(data: data) {
+                profileImage = uiImage
+            }
+        } catch {
+            print("❌ Failed to fetch profile image: \(error)")
+        }
     }
 
     private func uploadProfileImage(data: Data) async {
@@ -230,8 +320,12 @@ struct ProfileViewEnhanced: View {
         do {
             _ = try await storageRef.putDataAsync(data)
             let url = try await storageRef.downloadURL()
-            try await Firestore.firestore().collection("users").document(currentUserID).updateData(["profileImageURL": url.absoluteString])
-        } catch { print("❌ Upload failed: \(error)") }
+            try await Firestore.firestore().collection("users").document(currentUserID).updateData([
+                "profileImageURL": url.absoluteString
+            ])
+        } catch {
+            print("❌ Upload failed: \(error)")
+        }
     }
 
     @MainActor
@@ -239,9 +333,8 @@ struct ProfileViewEnhanced: View {
         let db = Firestore.firestore()
         guard let userDoc = try? await db.collection("users").document(currentUserID).getDocument(),
               let friendIDs = userDoc.data()? ["friends"] as? [String] else { return }
-
         var fetched: [UserPreview] = []
-        for id in friendIDs {
+        for id in friendIDs.prefix(3) {
             if let fdoc = try? await db.collection("users").document(id).getDocument(),
                let data = fdoc.data() {
                 let uname  = data["username"] as? String ?? "Unknown"
@@ -252,12 +345,72 @@ struct ProfileViewEnhanced: View {
         friends = fetched
     }
 
-    private func signOut() {
+    @MainActor
+    private func fetchPastHangouts() async {
+        let db = Firestore.firestore()
         do {
-            try Auth.auth().signOut()
-            signedOut = true
+            let snap = try await db.collection("hangouts")
+                .whereField("participants", arrayContains: currentUserID)
+                .order(by: "date", descending: true)
+                .limit(to: 2)
+                .getDocuments()
+            pastHangouts = snap.documents.map {
+                let data = $0.data()
+                return HangoutPreview(
+                    id: $0.documentID,
+                    title: data["title"] as? String ?? "Untitled",
+                    date: (data["date"] as? Timestamp)?.dateValue() ?? Date()
+                )
+            }
         } catch {
-            print("Error signing out: \(error)")
+            print("❌ Failed to fetch hangouts: \(error)")
         }
+    }
+
+    @MainActor
+    private func fetchJoinDate() async {
+        let db = Firestore.firestore()
+        do {
+            let doc = try await db.collection("users").document(currentUserID).getDocument()
+            if let timestamp = doc.data()? ["createdAt"] as? Timestamp {
+                let formatter = DateFormatter()
+                formatter.dateStyle = .medium
+                joinDateString = formatter.string(from: timestamp.dateValue())
+            }
+        } catch {
+            print("❌ Failed to fetch join date: \(error)")
+        }
+    }
+
+    private func isHandleOrEmailTaken(except userID: String, handle: String, email: String) async -> Bool {
+        let db = Firestore.firestore()
+        do {
+            let handleSnapshot = try await db.collection("users")
+                .whereField("handle", isEqualTo: handle)
+                .whereField(FieldPath.documentID(), isNotEqualTo: userID)
+                .getDocuments()
+
+            let emailSnapshot = try await db.collection("users")
+                .whereField("email", isEqualTo: email)
+                .whereField(FieldPath.documentID(), isNotEqualTo: userID)
+                .getDocuments()
+
+            return !handleSnapshot.documents.isEmpty || !emailSnapshot.documents.isEmpty
+        } catch {
+            print("❌ Conflict check failed: \(error)")
+            return true
+        }
+    }
+}
+
+struct HangoutPreview: Identifiable, Hashable {
+    let id: String
+    let title: String
+    let date: Date
+
+    var dateFormatted: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: date)
     }
 }

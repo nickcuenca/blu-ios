@@ -10,15 +10,14 @@ import FirebaseStorage
 import FirebaseFirestore
 
 struct CheckpointDetailView: View {
-    var sessionId: String
-    @Binding var checkpoint: Checkpoint
-    var participants: [String]
+    let sessionId: String
+    let checkpoint: Checkpoint
+    let participants: [String]
 
     @State private var expenses: [Expense] = []
     @State private var moments: [Moment] = []
     @State private var showingAddExpense = false
     @State private var showingAddMoment = false
-    @State private var selectedMoment: Moment? = nil  // ✅ Editor sheet trigger
 
     let columns = [GridItem(.adaptive(minimum: 100), spacing: 12)]
 
@@ -112,7 +111,7 @@ struct CheckpointDetailView: View {
 
     // MARK: - Firebase Fetchers
 
-    func fetchExpenses() {
+    private func fetchExpenses() {
         let db = Firestore.firestore()
         db.collection("hangoutSessions")
             .document(sessionId)
@@ -135,7 +134,7 @@ struct CheckpointDetailView: View {
             }
     }
 
-    func fetchMoments() {
+    private func fetchMoments() {
         let db = Firestore.firestore()
         db.collection("hangoutSessions")
             .document(sessionId)

@@ -35,36 +35,7 @@ struct SessionDetailView: View {
                                 .foregroundColor(.gray)
                                 .padding(.top, 10)
                         } else {
-                            ForEach(checkpoints) { checkpoint in
-                                NavigationLink(destination:
-                                    CheckpointDetailView(
-                                        sessionId: sessionId,
-                                        checkpoint: .constant(checkpoint),
-                                        participants: participants
-                                    )
-                                ) {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        HStack {
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                Text(checkpoint.title)
-                                                    .font(.headline)
-                                                if let time = checkpoint.time {
-                                                    Text(time, style: .time)
-                                                        .font(.caption)
-                                                        .foregroundColor(.gray)
-                                                }
-                                            }
-                                            Spacer()
-                                            Image(systemName: "chevron.right")
-                                                .foregroundColor(.gray)
-                                        }
-                                        .padding()
-                                        .background(Color.blue.opacity(0.1))
-                                        .cornerRadius(12)
-                                    }
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
+                            checkpointsList
                         }
                     }
                     .padding()
@@ -110,6 +81,39 @@ struct SessionDetailView: View {
                 }
                 .padding()
             }
+        }
+    }
+
+    // MARK: - Extracted Checkpoint List View
+
+    private var checkpointsList: some View {
+        ForEach(checkpoints) { checkpoint in
+            NavigationLink(destination:
+                CheckpointDetailView(
+                    sessionId: sessionId,
+                    checkpoint: checkpoint,
+                    participants: participants
+                )
+            ) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(checkpoint.title)
+                            .font(.headline)
+                        if let time = checkpoint.time {
+                            Text(time, style: .time)
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.gray)
+                }
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(12)
+            }
+            .buttonStyle(PlainButtonStyle())
         }
     }
 
