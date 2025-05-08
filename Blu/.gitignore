@@ -34,7 +34,7 @@ Carthage/Build/
 *.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
 
 # Firebase/GoogleService plist (if using Firebase, uncomment below)
-# GoogleService-Info.plist
+GoogleService-Info.plist
 
 # Xcode Preview Content
 *.xcpreview*
