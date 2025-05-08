@@ -1,55 +1,63 @@
 # 💸 Blü — Group Expense Splitting App
 
-Blü is a SwiftUI-powered iOS app that makes it easy for friend groups to track and split expenses during hangouts. Whether you're grabbing boba, hosting a BBQ, or going on a weekend trip, Blü keeps your group outings and finances simple and visual.
+Blü is a SwiftUI-powered iOS app that helps friend groups track and split expenses during hangouts. Whether you're grabbing boba, hosting a BBQ, or road-tripping to Vegas, Blü keeps your group outings fun, organized, and fair.
 
 ---
 
 ## ✨ Features
 
 - 🧑‍🤝‍🧑 **Create Hangout Sessions**  
-  Organize expenses by events — like “Bash” or “Vegas Trip 2025.”
+  Organize expenses by events — like “Vegas Trip 2025” or “Birthday Bash.”
 
 - 📍 **Add Checkpoints**  
-  Tag specific events (e.g., "Boba Run", "Dinner", "Gas") inside hangouts.
+  Add specific events (e.g., "Boba Run", "Dinner", "Gas") with optional timestamps and locations.
 
 - 💵 **Track Expenses Per Checkpoint**  
-  Log who paid and split expenses either **equally** or **custom**.
+  Record who paid and split costs either **equally** or **custom** across users.
 
-- 📷 **Capture Moments** *(Optional)*  
-  Add photos with captions to keep memories from each checkpoint.
+- 📷 **Capture Moments**  
+  Upload and caption images tied to each checkpoint for memory-keeping.
 
 - 📊 **Automatic Settle Up**  
-  Calculate how much each person owes or is owed — automatically.
+  Instantly calculate balances — who owes whom and how much.
+
+- 🧑‍💼 **Rich Profiles**  
+  View your social/payment handles, friends list, and past hangout history.
 
 - 🔐 **Firebase Auth Integration**  
-  Sign up/login securely via Firebase.
+  Register and log in securely using Firebase Authentication.
 
-- ☁️ **Cloud Sync with Firestore**  
-  Real-time updates across devices using Firebase Firestore.
+- ☁️ **Realtime Cloud Sync**  
+  Sync all hangouts, expenses, and moments live using Firebase Firestore.
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer         | Tech                                       |
-|---------------|--------------------------------------------|
-| **Frontend**  | SwiftUI, UIKit (occasionally), MapKit      |
-| **Backend**   | Firebase Firestore, Firebase Auth          |
-| **Storage**   | Firestore for structured session data      |
-| **Media**     | Firebase Storage for moments (images)      |
+| Layer         | Tech Stack                                       |
+|---------------|--------------------------------------------------|
+| **Frontend**  | SwiftUI, UIKit (occasionally), MapKit, PhotosUI |
+| **Backend**   | Firebase Firestore, Firebase Auth               |
+| **Media**     | Firebase Storage for image Moments              |
+| **Storage**   | Firestore structured documents (sessions, expenses, etc.) |
 
 ---
 
 ## 🧪 How It Works
 
-Each **Hangout** is a container for one or more **Checkpoints**.  
-Each Checkpoint can contain:
+Each **Hangout** is a session made up of multiple **Checkpoints**.  
+Each Checkpoint supports:
 
 - Expenses (split equally/custom)
-- Optional photo Moments with captions
-- Location and time tagging
+- Moments (photos + captions)
+- Location and optional timestamp
 
-All data is calculated into a **summary** and a **settle up list** so friends know what’s owed — and who owes it.
+The app automatically compiles this into:
+
+- **Summaries**: see total paid/owed
+- **Settle Up**: calculate reimbursements
+- **Memories**: revisit visual highlights
+- **Friends**: see shared users and profiles
 
 ---
 
@@ -60,30 +68,34 @@ All data is calculated into a **summary** and a **settle up list** so friends kn
    git clone https://github.com/nickcuenca/BluApp.git
    ```
 2. Open `BluApp.xcodeproj` in Xcode
-3. If using Firebase, add your `GoogleService-Info.plist` into the project
-4. Run on a Simulator or your iPhone
+3. Add your `GoogleService-Info.plist` if you're using Firebase
+4. Build & run on a simulator or physical iPhone
 
 ---
 
-## 🧠 Author
+## 👨‍💻 Developers
 
-Built by [**Nicolas Cuenca**](https://github.com/nickcuenca)  
-👨‍🎓 UCLA Computer Science  
-🔧 Full Stack Developer • iOS Builder • Firebase Enthusiast  
-📫 DM-friendly on GitHub or [LinkedIn](https://www.linkedin.com/in/nicolaswcuenca)
+**Nicolas Cuenca**  
+📍 UCLA CS Grad • Software Engineer & iOS & Full Stack Developer  
+🔗 [GitHub](https://github.com/nickcuenca) | [LinkedIn](https://www.linkedin.com/in/nicolaswcuenca)
+
+**Ethan Maldonado**  
+📍 UCLA CS Grad • Software Engineer & iOS & Full Stack Developer  
+🔗 [GitHub](https://github.com/eamaldonado01)
 
 ---
 
-## ✅ To-Do / Future Features
+## ✅ To-Do / Roadmap
 
-- Venmo/Apple Pay integration (launch payment directly)
-- Tip support
-- Map-based checkpoint creation
-- Dark mode polish
-- Friends tab (add/search users)
+- [ ] Venmo / Apple Pay integration for direct payment
+- [ ] Tip and tax support per expense
+- [ ] Dark mode + animation polish
+- [ ] Map-based checkpoint picker
+- [ ] Search and add friends by username or contact
+- [ ] Activity feed (e.g. "Ethan added Boba Run")
 
 ---
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+MIT License. See [`LICENSE`](LICENSE) for details.
