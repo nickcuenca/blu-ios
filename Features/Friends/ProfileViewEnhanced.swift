@@ -301,7 +301,7 @@ struct ProfileViewEnhanced: View {
     }
 
     private func signOut() {
-        CurrentUserStore.shared.signOut()
+        try? AuthService.shared.signOut()
     }
 
     @MainActor
@@ -377,7 +377,7 @@ struct ProfileViewEnhanced: View {
         let db = Firestore.firestore()
         do {
             let doc = try await db.collection("users").document(currentUserID).getDocument()
-            if let timestamp = doc.data()? ["createdAt"] as? Timestamp {
+            if let timestamp = doc.data()?["joinedAt"] as? Timestamp {
                 let formatter = DateFormatter()
                 formatter.dateStyle = .medium
                 joinDateString = formatter.string(from: timestamp.dateValue())

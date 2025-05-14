@@ -47,19 +47,19 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		30B0834F2DD4622700013F28 /* Core */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Core;
-			sourceTree = "<group>";
-		};
 		30B083572DD462C600013F28 /* Features */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Features;
 			sourceTree = "<group>";
 		};
-		30B0835F2DD463B800013F28 /* Shared */ = {
+		30FECF132DD4DEA000756AF1 /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		30FECF232DD4E06400756AF1 /* Core */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Core;
 			sourceTree = "<group>";
 		};
 		62EB12252D966407009F5CB1 /* App */ = {
@@ -123,9 +123,9 @@
 				30B082C92DD40B7A00013F28 /* BluApp.swift */,
 				30B082D82DD40B7A00013F28 /* GoogleService-Info.plist */,
 				30B082DE2DD40B7A00013F28 /* Info.plist */,
-				30B0835F2DD463B800013F28 /* Shared */,
+				30FECF232DD4E06400756AF1 /* Core */,
+				30FECF132DD4DEA000756AF1 /* Shared */,
 				30B083572DD462C600013F28 /* Features */,
-				30B0834F2DD4622700013F28 /* Core */,
 				62EB12252D966407009F5CB1 /* App */,
 				62EB12372D966409009F5CB1 /* BluTests */,
 				62EB12412D966409009F5CB1 /* BluUITests */,
@@ -160,9 +160,9 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				30B0834F2DD4622700013F28 /* Core */,
 				30B083572DD462C600013F28 /* Features */,
-				30B0835F2DD463B800013F28 /* Shared */,
+				30FECF132DD4DEA000756AF1 /* Shared */,
+				30FECF232DD4E06400756AF1 /* Core */,
 				62EB12252D966407009F5CB1 /* App */,
 			);
 			name = Blu;

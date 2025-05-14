@@ -32,8 +32,15 @@ struct HomeView: View {
                         case .equal:
                             let share = totalAmount / Double(participants.count)
                             return Dictionary(uniqueKeysWithValues: participants.map { ($0, share) })
+
                         case .custom:
                             return expense.itemizedBreakdown ?? [:]
+
+                        case .percentage:
+                            let breakdown = expense.itemizedBreakdown ?? [:]
+                            return Dictionary(uniqueKeysWithValues: breakdown.map { (uid, percent) in
+                                (uid, totalAmount * (percent / 100.0))
+                            })
                         }
                     }()
                     for (person, amount) in owedAmountPerPerson {

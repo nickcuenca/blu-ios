@@ -78,16 +78,12 @@ struct SignUpView: View {
         Task {
             do {
                 try await AuthService.shared.register(
-                    name: name,
-                    username: username,
-                    email: email,
-                    password: pw1,
-                    payment: ["venmo": venmo, "paypal": paypal]
+                  email: email,
+                  password: pw1,
+                  displayName: name   // or use username if preferred
                 )
-                if let uid = Auth.auth().currentUser?.uid {
-                    userID = uid
-                }
-                await CurrentUserStore.shared.load()
+                if let uid = Auth.auth().currentUser?.uid { userID = uid }
+                CurrentUserStore.shared.startListening()
                 switchTo = .app
             } catch {
                 self.error = error.localizedDescription

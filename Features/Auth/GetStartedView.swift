@@ -43,7 +43,7 @@ struct GetStartedView: View {
             }
             .task {
                 if Auth.auth().currentUser != nil {
-                    await CurrentUserStore.shared.load()
+                    CurrentUserStore.shared.startListening()
                     current = .app
                 }
             }

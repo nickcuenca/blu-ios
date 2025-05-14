@@ -1,7 +1,7 @@
 // BluApp.swift
-
 import SwiftUI
 import GoogleSignIn
+import FirebaseAuth
 
 @main
 struct BluApp: App {
@@ -10,8 +10,8 @@ struct BluApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if userStore.isLoggedIn {
-                TabBarView() // Main app UI
+            if userStore.profile != nil {  // was userStore.isLoggedIn
+                TabBarView()
             } else {
                 GetStartedView()
             }

@@ -46,7 +46,7 @@ struct LoginView: View {
                 if let uid = Auth.auth().currentUser?.uid {
                     userID = uid
                 }
-                await CurrentUserStore.shared.load()
+                CurrentUserStore.shared.startListening()
                 switchTo = .app
             } catch {
                 self.error = error.localizedDescription

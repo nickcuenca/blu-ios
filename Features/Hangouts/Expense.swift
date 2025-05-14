@@ -42,18 +42,3 @@ struct Expense: Identifiable, Codable, Hashable, Equatable {
     }
 }
 
-extension Expense {
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-
-        self.id = try container.decode(UUID.self, forKey: .id)
-        self.title = try container.decode(String.self, forKey: .title)
-        self.amount = try container.decode(Double.self, forKey: .amount)
-        self.paidBy = try container.decode(String.self, forKey: .paidBy)
-        self.splitType = try container.decode(SplitType.self, forKey: .splitType)
-        self.participants = try container.decode([String].self, forKey: .participants)
-        self.itemizedBreakdown = try container.decodeIfPresent([String: Double].self, forKey: .itemizedBreakdown)
-        self.createdBy = try container.decode(String.self, forKey: .createdBy)
-        self.timestamp = try container.decodeIfPresent(Date.self, forKey: .timestamp) ?? Date()
-    }
-}

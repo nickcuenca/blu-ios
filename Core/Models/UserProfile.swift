@@ -1,10 +1,23 @@
+// Core/Models/UserProfile.swift
 import Foundation
 
 struct UserProfile: Codable, Identifiable {
-    var id: String?                 // ← plain property; no @DocumentID
-    var name: String
-    var username: String
+    let id: String                      // == Firebase UID
+    var displayName: String
     var email: String
-    var payment: [String:String]
-    var createdAt: Date?
+    var photoURL: String?
+    var joinedAt: Date?
+    var stats: Stats
+    var payment: Payment
+
+    struct Stats: Codable {
+        var friends: Int
+        var hangouts: Int
+        var balanceOwed: Double
+    }
+
+    struct Payment: Codable {
+        var venmo: String
+        var paypal: String
+    }
 }
