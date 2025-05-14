@@ -7,10 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		30B082F92DD40B7A00013F28 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 30B082D82DD40B7A00013F28 /* GoogleService-Info.plist */; };
+		30B082FA2DD40B7A00013F28 /* BluApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30B082C92DD40B7A00013F28 /* BluApp.swift */; };
+		30B0831B2DD40B7A00013F28 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30B082C62DD40B7A00013F28 /* AppDelegate.swift */; };
+		30B083242DD40B7A00013F28 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 30B082D82DD40B7A00013F28 /* GoogleService-Info.plist */; };
+		30B083252DD40B7A00013F28 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 30B082D82DD40B7A00013F28 /* GoogleService-Info.plist */; };
 		30B0833F2DD41A0900013F28 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 30B0833E2DD41A0900013F28 /* FirebaseFirestore */; };
 		30B083412DD41A2200013F28 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 30B083402DD41A2200013F28 /* FirebaseAuth */; };
 		30B083432DD41A9500013F28 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 30B083422DD41A9500013F28 /* FirebaseStorage */; };
-		30B083472DD429F600013F28 /* UserProfile+Firestore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30B083462DD429F600013F28 /* UserProfile+Firestore.swift */; };
 		6295159C2DC8BE1B00DC54A1 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 6295159B2DC8BE1B00DC54A1 /* GoogleSignIn */; };
 		6295159E2DC8BE1B00DC54A1 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 6295159D2DC8BE1B00DC54A1 /* GoogleSignInSwift */; };
 /* End PBXBuildFile section */
@@ -33,45 +37,34 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		30B083462DD429F600013F28 /* UserProfile+Firestore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserProfile+Firestore.swift"; sourceTree = "<group>"; };
+		30B082C62DD40B7A00013F28 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		30B082C92DD40B7A00013F28 /* BluApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluApp.swift; sourceTree = "<group>"; };
+		30B082D82DD40B7A00013F28 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		30B082DE2DD40B7A00013F28 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		62EB12232D966407009F5CB1 /* Blu.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blu.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		62EB12342D966409009F5CB1 /* BluTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BluTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		62EB123E2D966409009F5CB1 /* BluUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BluUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		629515A02DC8C45800DC54A1 /* Exceptions for "Blu" folder in "Blu" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 62EB12222D966407009F5CB1 /* Blu */;
-		};
-		62AA69122DC0C5C4006AB4E3 /* Exceptions for "Blu" folder in "BluTests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"GoogleService-Info.plist",
-			);
-			target = 62EB12332D966409009F5CB1 /* BluTests */;
-		};
-		62AA69132DC0C5C4006AB4E3 /* Exceptions for "Blu" folder in "BluUITests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"GoogleService-Info.plist",
-			);
-			target = 62EB123D2D966409009F5CB1 /* BluUITests */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		62EB12252D966407009F5CB1 /* Blu */ = {
+		30B0834F2DD4622700013F28 /* Core */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				629515A02DC8C45800DC54A1 /* Exceptions for "Blu" folder in "Blu" target */,
-				62AA69122DC0C5C4006AB4E3 /* Exceptions for "Blu" folder in "BluTests" target */,
-				62AA69132DC0C5C4006AB4E3 /* Exceptions for "Blu" folder in "BluUITests" target */,
-			);
-			path = Blu;
+			path = Core;
+			sourceTree = "<group>";
+		};
+		30B083572DD462C600013F28 /* Features */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Features;
+			sourceTree = "<group>";
+		};
+		30B0835F2DD463B800013F28 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		62EB12252D966407009F5CB1 /* App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = App;
 			sourceTree = "<group>";
 		};
 		62EB12372D966409009F5CB1 /* BluTests */ = {
@@ -126,12 +119,18 @@
 		62EB121A2D966407009F5CB1 = {
 			isa = PBXGroup;
 			children = (
-				62EB12252D966407009F5CB1 /* Blu */,
+				30B082C62DD40B7A00013F28 /* AppDelegate.swift */,
+				30B082C92DD40B7A00013F28 /* BluApp.swift */,
+				30B082D82DD40B7A00013F28 /* GoogleService-Info.plist */,
+				30B082DE2DD40B7A00013F28 /* Info.plist */,
+				30B0835F2DD463B800013F28 /* Shared */,
+				30B083572DD462C600013F28 /* Features */,
+				30B0834F2DD4622700013F28 /* Core */,
+				62EB12252D966407009F5CB1 /* App */,
 				62EB12372D966409009F5CB1 /* BluTests */,
 				62EB12412D966409009F5CB1 /* BluUITests */,
 				621585652DC0D711007E1EA8 /* Frameworks */,
 				62EB12242D966407009F5CB1 /* Products */,
-				30B083462DD429F600013F28 /* UserProfile+Firestore.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -161,7 +160,10 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				62EB12252D966407009F5CB1 /* Blu */,
+				30B0834F2DD4622700013F28 /* Core */,
+				30B083572DD462C600013F28 /* Features */,
+				30B0835F2DD463B800013F28 /* Shared */,
+				62EB12252D966407009F5CB1 /* App */,
 			);
 			name = Blu;
 			packageProductDependencies = (
@@ -274,6 +276,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30B082F92DD40B7A00013F28 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,6 +284,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30B083242DD40B7A00013F28 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,6 +292,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				30B083252DD40B7A00013F28 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -298,7 +303,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				30B083472DD429F600013F28 /* UserProfile+Firestore.swift in Sources */,
+				30B082FA2DD40B7A00013F28 /* BluApp.swift in Sources */,
+				30B0831B2DD40B7A00013F28 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -453,15 +459,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Blu/Blu.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"Blu/Preview Content\"";
-				DEVELOPMENT_TEAM = FM34YU23RL;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				"INFOPLIST_FILE[sdk=*]" = Blu/Info.plist;
+				"INFOPLIST_FILE[sdk=*]" = Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -479,6 +485,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.nickcuenca.blu;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -493,15 +500,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Blu/Blu.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"Blu/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = FM34YU23RL;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
-				"INFOPLIST_FILE[sdk=*]" = Blu/Info.plist;
+				"INFOPLIST_FILE[sdk=*]" = Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -519,6 +527,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.nickcuenca.blu;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
