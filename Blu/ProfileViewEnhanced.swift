@@ -1,8 +1,4 @@
-//
 //  ProfileViewEnhanced.swift
-//  Blu
-//
-//  Created by Nicolas Cuenca on 5/5/25.
 
 import SwiftUI
 import FirebaseFirestore
@@ -83,7 +79,6 @@ struct ProfileViewEnhanced: View {
                 FriendProfileView(friend: friend)
             }
             .sheet(isPresented: $showSettings) { settingsSheet }
-            .fullScreenCover(isPresented: $signedOut) { GoogleSignInView() }
             .task {
                 await fetchProfileImage()
                 await fetchFriends()
@@ -306,12 +301,7 @@ struct ProfileViewEnhanced: View {
     }
 
     private func signOut() {
-        do {
-            try Auth.auth().signOut()
-            signedOut = true
-        } catch {
-            print("Error signing out: \(error)")
-        }
+        CurrentUserStore.shared.signOut()
     }
 
     @MainActor

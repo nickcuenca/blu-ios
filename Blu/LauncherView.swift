@@ -1,17 +1,8 @@
-//
-//  LauncherView.swift
-//  Blu
-//
-//  Created by Nicolas Cuenca on 3/28/25.
-//
-
 import SwiftUI
 import FirebaseAuth
 
 struct LauncherView: View {
-    @AppStorage("username") var username: String = ""
     @State private var isLoading = true
-    @State private var needsGoogleSignIn = false
 
     var body: some View {
         Group {
@@ -26,17 +17,13 @@ struct LauncherView: View {
                 .background(Color.white)
                 .ignoresSafeArea()
                 .onAppear {
+                    // Show logo for 1.5 seconds, then go to GetStarted screen
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        if Auth.auth().currentUser == nil {
-                            needsGoogleSignIn = true
-                        }
                         isLoading = false
                     }
                 }
-            } else if needsGoogleSignIn {
-                GoogleSignInView()
             } else {
-                TabBarView()
+                GetStartedView()
             }
         }
     }
