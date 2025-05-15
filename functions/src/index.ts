@@ -1,54 +1,80 @@
-import * as functions from "firebase-functions/v1";               // v1 interface
+import * as functions from "firebase-functions/v1";
 import * as admin from "firebase-admin";
-import { Change, EventContext } from "firebase-functions/v1";
-import {
-  DocumentSnapshot,
-  FieldValue             // ✅ import FieldValue directly
-} from "firebase-admin/firestore";
-
+import { DocumentSnapshot } from "firebase-functions/v1/firestore";
+import { Change } from "firebase-functions";
+import { EventContext } from "firebase-functions/v1";
 admin.initializeApp();
+
 const db = admin.firestore();
 
-// ---------- Helper: increment stats ----------
-async function inc(uid: string, field: string, by = 1) {
+/* ─────────── Helper: increment stats field ──────────── */
+async function inc(uid: string,
+                   field: string,
+                   by = 1) {
   await db.doc(`stats/${uid}`).set(
-    { [field]: FieldValue.increment(by) },   // ✅ safe, FieldValue always defined
+    { [field]: admin.firestore.FieldValue.increment(by) },
     { merge: true }
   );
 }
 
-// ---------- 1. Friend created ----------
+/* ─────────── 1. track new friend-pair creation ───────── */
 export const onFriendCreate = functions.firestore
   .document("friends/{pairID}")
   .onCreate(async (snap: DocumentSnapshot, ctx: EventContext) => {
     const users = snap.get("users") as string[] | undefined;
     if (!users || users.length !== 2) return;
 
-    await Promise.all(users.map((u) => inc(u, "friends")));
+    await Promise.all(users.map(u => inc(u, "friends")));
   });
 
-// ---------- 2. Hang-out session created ----------
+/* ─────────── 2. fan-out new hangout ──────────────────── */
 export const onHangoutCreate = functions.firestore
-  .document("hangoutSessions/{sessionID}")
+  .document("hangouts/{hid}")
   .onCreate(async (snap: DocumentSnapshot, ctx: EventContext) => {
-    const users = snap.get("participants") as string[] | undefined;
+    const data  = snap.data();
+    const users = data?.participants as string[] | undefined;
     if (!users) return;
 
-    await Promise.all(users.map((u) => inc(u, "hangouts")));
+    const batch = db.batch();
+    users.forEach(uid => {
+      batch.set(db.doc(`feed/${uid}/hangouts/${snap.id}`), data);
+    });
+    await batch.commit();
+
+    await Promise.all(users.map(u => inc(u, "hangouts")));
   });
 
-// ---------- 3. Expense written ----------
+/* ─────────── 3. update pair-balances on expense write ── */
 export const onExpenseWrite = functions.firestore
-  .document("hangoutSessions/{sessionID}/expenses/{expenseID}")
-  .onWrite(async (change: Change<DocumentSnapshot>, ctx: EventContext) => {
-    const after = change.after.exists ? change.after.data() : null;
+  .document("hangouts/{hid}/expenses/{expenseID}")
+  .onWrite(async (change: Change<DocumentSnapshot>,
+                  ctx: EventContext) => {
+
+    const after  = change.after.exists ? change.after.data()  : null;
     const before = change.before.exists ? change.before.data() : null;
+    if (!after) return;                           // only care about create / update
 
-    const delta = (after?.amount ?? 0) - (before?.amount ?? 0);
-    if (delta === 0) return;
+    const amount = after.amount     as number;
+    const payer  = after.paidBy     as string;
+    const parts  = after.participants as string[];
+    const share  = amount / parts.length;
 
-    const payer = after?.payer ?? before?.payer;
-    if (!payer) return;
+    // negate values if this is an update; recalc diff
+    const multiplier = before ? -1 : +1;
 
-    await inc(payer, "expensesTotal", delta);
+    const batch = db.batch();
+    parts.forEach(uid => {
+      const pair = (uid < payer) ? `${uid}-${payer}` : `${payer}-${uid}`;
+      const delta = (uid === payer ? amount - share : -share) * multiplier;
+
+      batch.set(
+        db.doc(`friends/${pair}`),
+        { users: [uid, payer],               // in case doc is brand-new
+          balances: { [uid]  : admin.firestore.FieldValue.increment(delta),
+                       [payer]: admin.firestore.FieldValue.increment(-delta) } },
+        { merge: true }
+      );
+    });
+
+    await batch.commit();
   });
