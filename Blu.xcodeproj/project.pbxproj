@@ -15,6 +15,7 @@
 		30B0833F2DD41A0900013F28 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 30B0833E2DD41A0900013F28 /* FirebaseFirestore */; };
 		30B083412DD41A2200013F28 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 30B083402DD41A2200013F28 /* FirebaseAuth */; };
 		30B083432DD41A9500013F28 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 30B083422DD41A9500013F28 /* FirebaseStorage */; };
+		30FECF462DD5C6B600756AF1 /* firestore.rules in Resources */ = {isa = PBXBuildFile; fileRef = 30FECF452DD5C6AF00756AF1 /* firestore.rules */; };
 		6295159C2DC8BE1B00DC54A1 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 6295159B2DC8BE1B00DC54A1 /* GoogleSignIn */; };
 		6295159E2DC8BE1B00DC54A1 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 6295159D2DC8BE1B00DC54A1 /* GoogleSignInSwift */; };
 /* End PBXBuildFile section */
@@ -41,6 +42,7 @@
 		30B082C92DD40B7A00013F28 /* BluApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluApp.swift; sourceTree = "<group>"; };
 		30B082D82DD40B7A00013F28 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		30B082DE2DD40B7A00013F28 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		30FECF452DD5C6AF00756AF1 /* firestore.rules */ = {isa = PBXFileReference; lastKnownFileType = text; path = firestore.rules; sourceTree = "<group>"; };
 		62EB12232D966407009F5CB1 /* Blu.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Blu.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		62EB12342D966409009F5CB1 /* BluTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BluTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		62EB123E2D966409009F5CB1 /* BluUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BluUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -119,6 +121,7 @@
 		62EB121A2D966407009F5CB1 = {
 			isa = PBXGroup;
 			children = (
+				30FECF452DD5C6AF00756AF1 /* firestore.rules */,
 				30B082C62DD40B7A00013F28 /* AppDelegate.swift */,
 				30B082C92DD40B7A00013F28 /* BluApp.swift */,
 				30B082D82DD40B7A00013F28 /* GoogleService-Info.plist */,
@@ -277,6 +280,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				30B082F92DD40B7A00013F28 /* GoogleService-Info.plist in Resources */,
+				30FECF462DD5C6B600756AF1 /* firestore.rules in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

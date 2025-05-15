@@ -3,104 +3,90 @@ import FirebaseFirestore
 
 struct FriendService {
 
-    static let db = Firestore.firestore()
-    static var currentUID: String { Auth.auth().currentUser?.uid ?? "" }
+    private static let db  = Firestore.firestore()
+    private static var me: String { Auth.auth().currentUser?.uid ?? "" }
 
-    // MARK: – Send a friend request
-    static func sendFriendRequest(to receiverID: String) async throws {
-        try await db.collection("friendRequests").addDocument(data: [
-            "from": currentUID,
-            "to": receiverID,
-            "status": "pending",
-            "createdAt": FieldValue.serverTimestamp()
-        ])
+    // MARK: - Helpers
+    private static func pairID(_ other: String) -> String {
+        [me, other].sorted().joined(separator: "-")                 // e.g. "abc-xyz"
+    }
+    private static func requestID(to other: String) -> String {
+        "\(me)_\(other)"                                            // e.g. "abc_xyz"
     }
 
-    // MARK: – Accept a friend request
-    static func acceptFriendRequest(from senderID: String) async throws {
-        // Find the matching pending request
-        let snap = try await db.collection("friendRequests")
-            .whereField("from", isEqualTo: senderID)
-            .whereField("to", isEqualTo: currentUID)
-            .whereField("status", isEqualTo: "pending")
-            .limit(to: 1)
-            .getDocuments()
+    // MARK: - Send
+    static func sendFriendRequest(to receiverID: String) async throws {
+        try await db.collection("friendRequests")
+            .document(requestID(to: receiverID))
+            .setData([
+                "from": me,
+                "to":   receiverID,
+                "status": "pending",
+                "sentAt": FieldValue.serverTimestamp()
+            ])
+    }
 
-        guard let doc = snap.documents.first else { return }
-        let reqID = doc.documentID
-
-        let pairID = [senderID, currentUID].sorted().joined(separator: "—")
-
+    // MARK: - Accept
+    static func acceptFriendRequest(from sender: String) async throws {
         let batch = db.batch()
 
-        // Update request status
-        batch.updateData(["status": "accepted"], forDocument: db.collection("friendRequests").document(reqID))
+        // update request status
+        let reqRef = db.collection("friendRequests").document("\(sender)_\(me)")
+        batch.updateData(["status": "accepted"], forDocument: reqRef)
 
-        // Create symmetric friendship doc
+        // create friends pair-doc
+        let pairRef = db.collection("friends").document(pairID(sender))
         batch.setData([
-            "users": [senderID, currentUID],
+            "users": [sender, me],
             "createdAt": FieldValue.serverTimestamp()
-        ], forDocument: db.collection("friends").document(pairID))
+        ], forDocument: pairRef)
 
         try await batch.commit()
     }
 
-    // MARK: – Decline a friend request
-    static func declineFriendRequest(from senderID: String) async throws {
-        // Find the matching pending request
-        let snap = try await db.collection("friendRequests")
-            .whereField("from", isEqualTo: senderID)
-            .whereField("to", isEqualTo: currentUID)
-            .whereField("status", isEqualTo: "pending")
-            .limit(to: 1)
-            .getDocuments()
-
-        guard let doc = snap.documents.first else { return }
-
+    // MARK: - Decline
+    static func declineFriendRequest(from sender: String) async throws {
         try await db.collection("friendRequests")
-            .document(doc.documentID)
+            .document("\(sender)_\(me)")
             .updateData(["status": "rejected"])
     }
 
-    // MARK: – Friend list previews (used in UI)
+    // MARK: - Remove friend
+    static func removeFriend(uid: String) async throws {
+        try await db.collection("friends").document(pairID(uid)).delete()
+    }
+
+    // MARK: - Friend previews
     static func fetchFriendPreviews() async throws -> [UserPreview] {
         let snap = try await db.collection("friends")
-            .whereField("users", arrayContains: currentUID)
+            .whereField("users", arrayContains: me)
             .getDocuments()
 
         var previews: [UserPreview] = []
-
         for doc in snap.documents {
-            let users = doc["users"] as? [String] ?? []
-            guard let friendUID = users.first(where: { $0 != currentUID }) else { continue }
+            guard
+                let users = doc["users"] as? [String],
+                let friendUID = users.first(where: { $0 != me })
+            else { continue }
 
             let friendDoc = try await db.collection("users").document(friendUID).getDocument()
             guard let data = friendDoc.data() else { continue }
 
-            previews.append(UserPreview(
-                id: friendUID,
-                username: data["displayName"] as? String ?? "Unknown",
-                handle: data["handle"] as? String ?? ""
-            ))
+            previews.append(
+                UserPreview(
+                    id: friendUID,
+                    username: data["displayName"] as? String ?? "Unknown",
+                    handle:   data["handle"]      as? String ?? ""
+                )
+            )
         }
-
         return previews
     }
-}
 
-// MARK: – Extra helpers used by FriendsProfileView & PendingRequestsView
-extension FriendService {
-
-    /// Permanently delete the friendship pair document
-    static func removeFriend(uid: String) async throws {
-        let pairID = [currentUID, uid].sorted().joined(separator: "—")
-        try await db.collection("friends").document(pairID).delete()
-    }
-
-    /// All pending requests incoming to the current user
+    // MARK: - Pending inbound requests (utility)
     static func fetchIncomingRequests() async throws -> [FriendRequest] {
         let snap = try await db.collection("friendRequests")
-            .whereField("to", isEqualTo: currentUID)
+            .whereField("to", isEqualTo: me)
             .whereField("status", isEqualTo: "pending")
             .getDocuments()
         return try snap.documents.compactMap { try $0.data(as: FriendRequest.self) }

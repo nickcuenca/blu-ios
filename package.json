@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase-admin": "^13.4.0"
+  },
+  "scripts": {
+    "test:rules": "for f in tests/*.js; do echo \"Running $f\"; npx firebase emulators:exec --only firestore \"node $f\"; echo ''; done"
+  }
+}

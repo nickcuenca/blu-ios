@@ -34,42 +34,45 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.onExpenseWrite = exports.onHangoutCreate = exports.onFriendCreate = void 0;
-const functions = __importStar(require("firebase-functions/v1"));
+const functions = __importStar(require("firebase-functions/v1")); // v1 interface
 const admin = __importStar(require("firebase-admin"));
+const firestore_1 = require("firebase-admin/firestore");
 admin.initializeApp();
 const db = admin.firestore();
-// ---------- FRIEND ADDED ----------
+// ---------- Helper: increment stats ----------
+async function inc(uid, field, by = 1) {
+    await db.doc(`stats/${uid}`).set({ [field]: firestore_1.FieldValue.increment(by) }, // ✅ safe, FieldValue always defined
+    { merge: true });
+}
+// ---------- 1. Friend created ----------
 exports.onFriendCreate = functions.firestore
-    .document("friends/{pairId}")
-    .onCreate(async (snap) => {
-    const { users } = snap.data();
-    const inc = admin.firestore.FieldValue.increment(1);
-    const batch = db.batch();
-    users.forEach(uid => batch.update(db.doc(`users/${uid}`), { "stats.friends": inc }));
-    await batch.commit();
+    .document("friends/{pairID}")
+    .onCreate(async (snap, ctx) => {
+    const users = snap.get("users");
+    if (!users || users.length !== 2)
+        return;
+    await Promise.all(users.map((u) => inc(u, "friends")));
 });
-// ---------- HANGOUT CREATED ----------
+// ---------- 2. Hang-out session created ----------
 exports.onHangoutCreate = functions.firestore
-    .document("hangoutSessions/{id}")
-    .onCreate(async (snap) => {
-    const { owner } = snap.data();
-    await db.doc(`users/${owner}`)
-        .update({ "stats.hangouts": admin.firestore.FieldValue.increment(1) });
+    .document("hangoutSessions/{sessionID}")
+    .onCreate(async (snap, ctx) => {
+    const users = snap.get("participants");
+    if (!users)
+        return;
+    await Promise.all(users.map((u) => inc(u, "hangouts")));
 });
-// ---------- EXPENSE WRITE ----------
+// ---------- 3. Expense written ----------
 exports.onExpenseWrite = functions.firestore
-    .document("hangoutSessions/{sid}/expenses/{eid}")
-    .onWrite(async (change) => {
+    .document("hangoutSessions/{sessionID}/expenses/{expenseID}")
+    .onWrite(async (change, ctx) => {
     const after = change.after.exists ? change.after.data() : null;
     const before = change.before.exists ? change.before.data() : null;
-    if (!after)
+    const delta = (after?.amount ?? 0) - (before?.amount ?? 0);
+    if (delta === 0)
         return;
-    const splits = after.splits || {};
-    const batch = db.batch();
-    Object.entries(splits).forEach(([uid, amt]) => {
-        const prev = before?.splits?.[uid] ?? 0;
-        const diff = Number(amt) - Number(prev);
-        batch.update(db.doc(`users/${uid}`), { "stats.balanceOwed": admin.firestore.FieldValue.increment(diff) });
-    });
-    await batch.commit();
+    const payer = after?.payer ?? before?.payer;
+    if (!payer)
+        return;
+    await inc(payer, "expensesTotal", delta);
 });
